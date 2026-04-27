@@ -1,0 +1,17 @@
+﻿include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include pepl_os *.css
+recursive-include pepl_os *.csv
+recursive-include pepl_os *.html
+recursive-include pepl_os *.ico
+recursive-include pepl_os *.js
+recursive-include pepl_os *.json
+recursive-include pepl_os *.md
+recursive-include pepl_os *.png
+recursive-include pepl_os *.py
+recursive-include pepl_os *.svg
+recursive-include pepl_os *.txt
