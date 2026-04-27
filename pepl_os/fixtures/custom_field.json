@@ -1,0 +1,39 @@
+[
+ {
+  "doctype": "Custom Field",
+  "dt": "Item",
+  "fieldname": "custom_drawing_no",
+  "label": "Drawing Number",
+  "fieldtype": "Data",
+  "insert_after": "item_name",
+  "module": "PEPL OS"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "Item",
+  "fieldname": "custom_drawing_rev",
+  "label": "Drawing Revision",
+  "fieldtype": "Data",
+  "insert_after": "custom_drawing_no",
+  "module": "PEPL OS"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "Item",
+  "fieldname": "custom_pl_no",
+  "label": "PL Number (Railways)",
+  "fieldtype": "Data",
+  "insert_after": "custom_drawing_rev",
+  "module": "PEPL OS"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "Item",
+  "fieldname": "custom_sector",
+  "label": "Default Sector",
+  "fieldtype": "Select",
+  "options": "\nRailways\nDefence\nPrivate\nOthers",
+  "insert_after": "custom_pl_no",
+  "module": "PEPL OS"
+ }
+]

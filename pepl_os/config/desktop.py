@@ -1,4 +1,4 @@
-﻿from frappe import _
+from frappe import _
 
 
 def get_data():
@@ -9,6 +9,13 @@ def get_data():
             "icon": "octicon octicon-tools",
             "type": "module",
             "label": _("PEPL OS"),
-            "items": []
+            "items": [
+                {
+                    "type": "doctype",
+                    "name": "Vendor Approval Status",
+                    "label": _("Vendor Approval Status"),
+                    "description": _("Per-item vendor approval tracking — Railways and Defence stages")
+                }
+            ]
         }
     ]
