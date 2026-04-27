@@ -1,0 +1,22 @@
+﻿[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "pepl_os"
+authors = [
+    { name = "Parasramka Engineering Pvt. Ltd.", email = "aviral.parasramka@gmail.com"}
+]
+description = "PEPL Operating System — Custom ERP for Parasramka Engineering Pvt. Ltd."
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = [
+    # "frappe~=15.0.0" # Installed and managed by bench.
+]
+
+[project.urls]
+Homepage = "https://github.com/aviralparasramka-web/pepl_os"
+
+[tool.flit.module]
+name = "pepl_os"
