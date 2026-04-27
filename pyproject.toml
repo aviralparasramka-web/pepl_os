@@ -1,0 +1,17 @@
+﻿[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "pepl_os"
+authors = [
+    { name = "Parasramka Engineering Pvt. Ltd.", email = "aviral.parasramka@gmail.com"}
+]
+description = "PEPL Operating System"
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = []
+
+[tool.flit.module]
+name = "pepl_os"
