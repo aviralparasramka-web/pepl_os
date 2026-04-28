@@ -11,6 +11,25 @@ class PEPLCompanyDocument(Document):
                 "When Document Type is 'Other', please specify what document this is"
             ))
 
+        if self.document_type == "Other" and self.document_type_other:
+            if self.is_new():
+                proposed_name = self.document_type_other.strip()
+                if frappe.db.exists("PEPL Company Document", proposed_name):
+                    frappe.throw(_(
+                        "A document with name '{0}' already exists. Please use a different name."
+                    ).format(proposed_name))
+                self.name = proposed_name
+
+        if self.document_type and self.document_type != "Other":
+            existing = frappe.db.exists(
+                "PEPL Company Document",
+                {"document_type": self.document_type, "name": ["!=", self.name]}
+            )
+            if existing:
+                frappe.throw(_(
+                    "A {0} document already exists. Please update the existing one rather than creating a duplicate."
+                ).format(self.document_type))
+
         if not self.versions:
             frappe.throw(_("At least one version must be added"))
 

@@ -53,6 +53,12 @@ frappe.ui.form.on("PEPL Company Document", {
 			"GST Certificate": "Statutory",
 			"PAN Card": "Statutory",
 			"Incorporation Certificate": "Company Records",
+			"Factory License": "Statutory",
+			"Trade License": "Statutory",
+			"Electricity Certificate / Connection": "Company Records",
+			"Rent Agreement / Lease Deed": "Company Records",
+			"Pollution Certificate (CTE/CTO)": "Statutory",
+			"Centralised Vendor Registration Certificate": "Company Records",
 			"Bank Statement": "Financial",
 			"Plant and Machinery List": "Company Records",
 			"Instruments and Testing Facilities List": "Company Records",
@@ -62,7 +68,8 @@ frappe.ui.form.on("PEPL Company Document", {
 			"AS9100D Certificate": "Quality Certification",
 			"IATF 16949 Certificate": "Quality Certification",
 			"IRIS Certificate": "Quality Certification",
-			"Income Tax Return": "Financial",
+			"Income Tax Return Acknowledgement": "Financial",
+			"Balance Sheet": "Financial",
 			"Audited Financials": "Financial"
 		};
 
