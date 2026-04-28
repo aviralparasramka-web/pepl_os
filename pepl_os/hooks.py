@@ -15,6 +15,18 @@ fixtures = [
         "filters": [
             ["module", "=", "PEPL OS"]
         ]
+    },
+    {
+        "dt": "Role",
+        "filters": [
+            ["role_name", "in", ["Engineering Manager", "Engineering User", "Purchase User"]]
+        ]
+    },
+    {
+        "dt": "Custom DocPerm",
+        "filters": [
+            ["role", "in", ["Engineering Manager", "Engineering User", "Purchase User"]]
+        ]
     }
 ]
 

@@ -12,9 +12,11 @@
   "doctype": "Custom Field",
   "dt": "Item",
   "fieldname": "custom_drawing_rev",
-  "label": "Drawing Revision",
+  "label": "Current Drawing Revision",
   "fieldtype": "Data",
   "insert_after": "custom_drawing_no",
+  "read_only": 1,
+  "description": "Auto-fetched from latest revision in Drawings table",
   "module": "PEPL OS"
  },
  {
@@ -34,6 +36,50 @@
   "fieldtype": "Select",
   "options": "\nRailways\nDefence\nPrivate\nOthers",
   "insert_after": "custom_pl_no",
+  "module": "PEPL OS"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "Item",
+  "fieldname": "custom_drawings_section",
+  "label": "Drawings",
+  "fieldtype": "Section Break",
+  "insert_after": "custom_sector",
+  "collapsible": 1,
+  "collapsible_depends_on": "eval:!doc.drawings || doc.drawings.length==0",
+  "module": "PEPL OS"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "Item",
+  "fieldname": "custom_drawings",
+  "label": "Drawing Versions",
+  "fieldtype": "Table",
+  "options": "Item Drawing Version",
+  "insert_after": "custom_drawings_section",
+  "description": "Add a new row each time the drawing is revised. Tick 'Current Revision' on the active one.",
+  "module": "PEPL OS"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "Item",
+  "fieldname": "custom_specifications_section",
+  "label": "Specifications",
+  "fieldtype": "Section Break",
+  "insert_after": "custom_drawings",
+  "collapsible": 1,
+  "collapsible_depends_on": "eval:!doc.specifications || doc.specifications.length==0",
+  "module": "PEPL OS"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "Item",
+  "fieldname": "custom_specifications",
+  "label": "Specifications",
+  "fieldtype": "Table",
+  "options": "Item Specification",
+  "insert_after": "custom_specifications_section",
+  "description": "Performance specs, assembly specs, customer requirements, etc.",
   "module": "PEPL OS"
  }
 ]

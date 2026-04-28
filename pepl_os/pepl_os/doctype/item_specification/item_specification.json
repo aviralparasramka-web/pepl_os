@@ -1,0 +1,105 @@
+{
+ "actions": [],
+ "creation": "2026-04-28 18:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "spec_type",
+  "spec_title",
+  "reference_no",
+  "issuing_authority",
+  "issue_date",
+  "effective_date",
+  "status",
+  "file_attach",
+  "spec_text",
+  "linked_drawing_revision",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "spec_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Specification Type",
+   "options": "Customer Specification\nRDSO Specification\nDQA Specification\nIRIS Specification\nInternal Specification\nPerformance Specification\nAssembly Specification\nBOM Reference\nMaterial Specification\nTest Specification\nAcceptance Criteria\nPackaging Specification\nMarking and Identification\nOther",
+   "reqd": 1
+  },
+  {
+   "fieldname": "spec_title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Specification Title",
+   "reqd": 1,
+   "description": "Human-readable name e.g., 'Performance Spec for Brake Block Type X'"
+  },
+  {
+   "fieldname": "reference_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Reference / Document Number"
+  },
+  {
+   "fieldname": "issuing_authority",
+   "fieldtype": "Data",
+   "label": "Issuing Authority",
+   "description": "RDSO / DQA / Customer Name / PEPL Internal"
+  },
+  {
+   "fieldname": "issue_date",
+   "fieldtype": "Date",
+   "label": "Issue Date"
+  },
+  {
+   "fieldname": "effective_date",
+   "fieldtype": "Date",
+   "label": "Effective Date"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Active\nSuperseded\nDraft\nUnder Review",
+   "default": "Active",
+   "reqd": 1
+  },
+  {
+   "fieldname": "file_attach",
+   "fieldtype": "Attach",
+   "label": "Specification File",
+   "description": "Optional — upload PDF/document if available"
+  },
+  {
+   "fieldname": "spec_text",
+   "fieldtype": "Text Editor",
+   "label": "Specification Details (Text)",
+   "description": "Optional — for short specs, deviations, notes without separate file"
+  },
+  {
+   "fieldname": "linked_drawing_revision",
+   "fieldtype": "Data",
+   "label": "Linked Drawing Revision",
+   "description": "If this spec applies to a specific drawing revision"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-04-28 18:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "Item Specification",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "issue_date",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
