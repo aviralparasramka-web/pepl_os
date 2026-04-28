@@ -15,6 +15,12 @@ def get_data():
                     "name": "Vendor Approval Status",
                     "label": _("Vendor Approval Status"),
                     "description": _("Per-item vendor approval tracking — Railways and Defence stages")
+                },
+                {
+                    "type": "doctype",
+                    "name": "PEPL Company Document",
+                    "label": _("Company Document Library"),
+                    "description": _("Master library — GST, Udyam, ISO, etc. with version history")
                 }
             ]
         }
