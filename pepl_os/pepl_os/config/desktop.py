@@ -26,19 +26,19 @@ def get_data():
                     "type": "doctype",
                     "name": "PEPL Product Drawing",
                     "label": _("Product Drawings"),
-                    "description": _("Assembly drawings with component nest")
+                    "description": _("Assembly drawings with revision history and component nest")
                 },
                 {
                     "type": "doctype",
                     "name": "PEPL Item Drawing",
                     "label": _("Item Drawings"),
-                    "description": _("Component-level drawings")
+                    "description": _("Component drawings with revision history")
                 },
                 {
                     "type": "doctype",
                     "name": "PEPL Specification",
                     "label": _("Specifications"),
-                    "description": _("Performance specs, customer specs, RDSO/DQA specs — many-to-many with Items")
+                    "description": _("Performance, customer, RDSO/DQA specs — many-to-many with Items")
                 }
             ]
         }

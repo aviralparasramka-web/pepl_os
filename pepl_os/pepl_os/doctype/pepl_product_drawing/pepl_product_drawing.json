@@ -1,30 +1,29 @@
 {
  "actions": [],
  "allow_rename": 0,
- "autoname": "format:PDR-{drawing_no}-{revision}",
- "creation": "2026-04-28 14:00:00",
+ "autoname": "format:PDR-{drawing_no}",
+ "creation": "2026-04-28 16:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "identification_section",
   "drawing_no",
-  "revision",
-  "drawing_type",
+  "drawing_title",
   "column_break_1",
-  "linked_product",
-  "issue_date",
+  "drawing_type",
   "status",
-  "file_section",
-  "drawing_file",
-  "details_section",
-  "issued_by",
-  "customer_approved",
-  "customer_approval_date",
-  "column_break_2",
-  "supersedes_revision",
-  "change_description",
+  "products_section",
+  "applies_to_products",
   "components_section",
   "components",
+  "current_revision_section",
+  "current_revision",
+  "current_file",
+  "column_break_2",
+  "current_issue_date",
+  "current_customer_approved",
+  "revisions_section",
+  "revisions",
   "notes_section",
   "remarks"
  ],
@@ -40,14 +39,18 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Drawing Number",
-   "reqd": 1
+   "reqd": 1,
+   "unique": 1
   },
   {
-   "fieldname": "revision",
+   "fieldname": "drawing_title",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Revision",
-   "reqd": 1
+   "label": "Drawing Title / Description"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "drawing_type",
@@ -56,28 +59,7 @@
    "in_standard_filter": 1,
    "label": "Drawing Type",
    "options": "Assembly Drawing\nSub-Assembly Drawing",
-   "reqd": 1,
-   "default": "Assembly Drawing"
-  },
-  {
-   "fieldname": "column_break_1",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "linked_product",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Product (Item)",
-   "options": "Item",
-   "reqd": 1,
-   "description": "The product this drawing represents — must be an assembly item"
-  },
-  {
-   "fieldname": "issue_date",
-   "fieldtype": "Date",
-   "in_list_view": 1,
-   "label": "Issue Date",
+   "default": "Assembly Drawing",
    "reqd": 1
   },
   {
@@ -86,70 +68,80 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Draft\nActive\nSuperseded\nObsolete",
+   "options": "Active\nObsolete",
    "default": "Active",
    "reqd": 1
   },
   {
-   "fieldname": "file_section",
+   "fieldname": "products_section",
    "fieldtype": "Section Break",
-   "label": "Drawing File"
+   "label": "Products This Drawing Applies To",
+   "description": "List all products that use this assembly drawing"
   },
   {
-   "fieldname": "drawing_file",
-   "fieldtype": "Attach",
-   "label": "Drawing File",
+   "fieldname": "applies_to_products",
+   "fieldtype": "Table",
+   "label": "Products",
+   "options": "PEPL Product Drawing Product",
    "reqd": 1
-  },
-  {
-   "fieldname": "details_section",
-   "fieldtype": "Section Break",
-   "label": "Drawing Details"
-  },
-  {
-   "fieldname": "issued_by",
-   "fieldtype": "Data",
-   "label": "Issued By",
-   "description": "Customer / RDSO / DQA / Internal Engineering"
-  },
-  {
-   "fieldname": "customer_approved",
-   "fieldtype": "Check",
-   "label": "Customer Approved",
-   "default": "0"
-  },
-  {
-   "fieldname": "customer_approval_date",
-   "fieldtype": "Date",
-   "label": "Customer Approval Date",
-   "depends_on": "eval:doc.customer_approved==1"
-  },
-  {
-   "fieldname": "column_break_2",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "supersedes_revision",
-   "fieldtype": "Data",
-   "label": "Supersedes Revision",
-   "description": "Which earlier revision does this replace"
-  },
-  {
-   "fieldname": "change_description",
-   "fieldtype": "Small Text",
-   "label": "What Changed in This Revision"
   },
   {
    "fieldname": "components_section",
    "fieldtype": "Section Break",
    "label": "Component Drawings (Drawing Nest)",
-   "description": "Component items and their drawings that make up this assembly"
+   "description": "Component items and their drawings inside this assembly"
   },
   {
    "fieldname": "components",
    "fieldtype": "Table",
    "label": "Components",
    "options": "PEPL Product Drawing Component"
+  },
+  {
+   "fieldname": "current_revision_section",
+   "fieldtype": "Section Break",
+   "label": "Current Revision (Auto-populated)"
+  },
+  {
+   "fieldname": "current_revision",
+   "fieldtype": "Data",
+   "label": "Current Revision",
+   "read_only": 1
+  },
+  {
+   "fieldname": "current_file",
+   "fieldtype": "Attach",
+   "label": "Current File",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "current_issue_date",
+   "fieldtype": "Date",
+   "label": "Current Issue Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "current_customer_approved",
+   "fieldtype": "Check",
+   "label": "Current Customer Approved",
+   "read_only": 1
+  },
+  {
+   "fieldname": "revisions_section",
+   "fieldtype": "Section Break",
+   "label": "Revision History",
+   "description": "Add a new row each time the drawing is revised"
+  },
+  {
+   "fieldname": "revisions",
+   "fieldtype": "Table",
+   "label": "Revisions",
+   "options": "PEPL Product Drawing Revision",
+   "reqd": 1
   },
   {
    "fieldname": "notes_section",
@@ -164,7 +156,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-28 14:00:00",
+ "modified": "2026-04-28 16:00:00",
  "modified_by": "Administrator",
  "module": "PEPL OS",
  "name": "PEPL Product Drawing",
