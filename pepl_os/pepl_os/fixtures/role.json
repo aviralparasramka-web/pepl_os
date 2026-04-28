@@ -1,5 +1,6 @@
 [
  {
+  "name": "Engineering Manager",
   "doctype": "Role",
   "role_name": "Engineering Manager",
   "desk_access": 1,
@@ -7,6 +8,7 @@
   "two_factor_auth": 0
  },
  {
+  "name": "Engineering User",
   "doctype": "Role",
   "role_name": "Engineering User",
   "desk_access": 1,
@@ -14,6 +16,7 @@
   "two_factor_auth": 0
  },
  {
+  "name": "Purchase User",
   "doctype": "Role",
   "role_name": "Purchase User",
   "desk_access": 1,

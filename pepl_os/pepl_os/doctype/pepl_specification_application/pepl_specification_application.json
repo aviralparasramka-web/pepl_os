@@ -1,0 +1,58 @@
+{
+ "actions": [],
+ "creation": "2026-04-28 14:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "applies_to_type",
+  "applied_item",
+  "is_primary",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "applies_to_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Applies To",
+   "options": "Product\nItem\nBoth",
+   "default": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "applied_item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "is_primary",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Primary Spec for This Item",
+   "default": "0",
+   "description": "Tick if this is the main specification governing this item"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-04-28 14:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "PEPL Specification Application",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "ASC",
+ "states": [],
+ "track_changes": 1
+}

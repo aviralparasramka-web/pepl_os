@@ -1,5 +1,6 @@
 [
  {
+  "name": "Item-custom_drawing_no",
   "doctype": "Custom Field",
   "dt": "Item",
   "fieldname": "custom_drawing_no",
@@ -9,6 +10,7 @@
   "module": "PEPL OS"
  },
  {
+  "name": "Item-custom_drawing_rev",
   "doctype": "Custom Field",
   "dt": "Item",
   "fieldname": "custom_drawing_rev",
@@ -16,10 +18,11 @@
   "fieldtype": "Data",
   "insert_after": "custom_drawing_no",
   "read_only": 1,
-  "description": "Auto-fetched from latest revision in Drawings table",
+  "description": "Auto-fetched from active PEPL Item Drawing or PEPL Product Drawing",
   "module": "PEPL OS"
  },
  {
+  "name": "Item-custom_pl_no",
   "doctype": "Custom Field",
   "dt": "Item",
   "fieldname": "custom_pl_no",
@@ -29,6 +32,7 @@
   "module": "PEPL OS"
  },
  {
+  "name": "Item-custom_sector",
   "doctype": "Custom Field",
   "dt": "Item",
   "fieldname": "custom_sector",
@@ -39,47 +43,27 @@
   "module": "PEPL OS"
  },
  {
+  "name": "Item-custom_is_product",
   "doctype": "Custom Field",
   "dt": "Item",
-  "fieldname": "custom_drawings_section",
-  "label": "Drawings",
-  "fieldtype": "Section Break",
+  "fieldname": "custom_is_product",
+  "label": "Is a Product (Sold to Customer)",
+  "fieldtype": "Check",
   "insert_after": "custom_sector",
-  "collapsible": 1,
-  "collapsible_depends_on": "eval:!doc.drawings || doc.drawings.length==0",
+  "default": "0",
+  "description": "Tick if this item is something PEPL sells to customers (vs. a sub-component)",
   "module": "PEPL OS"
  },
  {
+  "name": "Item-custom_product_type",
   "doctype": "Custom Field",
   "dt": "Item",
-  "fieldname": "custom_drawings",
-  "label": "Drawing Versions",
-  "fieldtype": "Table",
-  "options": "Item Drawing Version",
-  "insert_after": "custom_drawings_section",
-  "description": "Add a new row each time the drawing is revised. Tick 'Current Revision' on the active one.",
-  "module": "PEPL OS"
- },
- {
-  "doctype": "Custom Field",
-  "dt": "Item",
-  "fieldname": "custom_specifications_section",
-  "label": "Specifications",
-  "fieldtype": "Section Break",
-  "insert_after": "custom_drawings",
-  "collapsible": 1,
-  "collapsible_depends_on": "eval:!doc.specifications || doc.specifications.length==0",
-  "module": "PEPL OS"
- },
- {
-  "doctype": "Custom Field",
-  "dt": "Item",
-  "fieldname": "custom_specifications",
-  "label": "Specifications",
-  "fieldtype": "Table",
-  "options": "Item Specification",
-  "insert_after": "custom_specifications_section",
-  "description": "Performance specs, assembly specs, customer requirements, etc.",
+  "fieldname": "custom_product_type",
+  "label": "Product Type",
+  "fieldtype": "Select",
+  "options": "\nSingle Component\nAssembly\nSub-Assembly",
+  "insert_after": "custom_is_product",
+  "depends_on": "eval:doc.custom_is_product==1",
   "module": "PEPL OS"
  }
 ]
