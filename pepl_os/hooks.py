@@ -27,7 +27,8 @@ fixtures = [
         "filters": [
             ["role", "in", ["Engineering Manager", "Engineering User", "Purchase User"]]
         ]
-    }
+    },
+    "PEPL RM Group"
 ]
 
 scheduler_events = {}
