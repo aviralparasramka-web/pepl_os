@@ -64,35 +64,31 @@ class PEPLTender(Document):
                 )
 
     def _fetch_item_details(self, item_row):
-        """Fetch drawing revision, spec title, and vendor approval stage for a tender item row."""
+        """Fetch drawing, spec, and vendor approval stage for an item row.
+        Updated to query PEPL Product Master instead of separate drawing/spec DocTypes."""
 
-        drawing = frappe.db.sql(
-            """
-            SELECT d.current_revision, d.drawing_no
-            FROM `tabPEPL Item Drawing` d
-            INNER JOIN `tabPEPL Item Drawing Item` di ON di.parent = d.name
-            WHERE di.applied_item = %s AND d.status = 'Active'
-            ORDER BY d.modified DESC LIMIT 1
-            """,
-            item_row.item,
+        product = frappe.db.get_value(
+            "PEPL Product Master",
+            {"linked_item": item_row.item},
+            ["name", "current_drawing_revision", "drawing_number"],
             as_dict=True,
         )
-        if drawing:
-            item_row.current_drawing_revision = drawing[0].current_revision
 
-        spec = frappe.db.sql(
-            """
-            SELECT s.name, s.spec_title
-            FROM `tabPEPL Specification` s
-            INNER JOIN `tabPEPL Specification Application` sa ON sa.parent = s.name
-            WHERE sa.applied_item = %s AND sa.is_primary = 1 AND s.status = 'Active'
-            LIMIT 1
-            """,
-            item_row.item,
-            as_dict=True,
-        )
-        if spec:
-            item_row.current_specification = spec[0].spec_title
+        if product:
+            item_row.current_drawing_revision = product.current_drawing_revision
+
+            primary_spec = frappe.db.sql(
+                """
+                SELECT spec_title FROM `tabPEPL Product Specification`
+                WHERE parent = %s AND status = 'Active'
+                ORDER BY creation ASC LIMIT 1
+                """,
+                product.name,
+                as_dict=True,
+            )
+
+            if primary_spec:
+                item_row.current_specification = primary_spec[0].spec_title
 
         vas = frappe.db.get_value(
             "Vendor Approval Status",
