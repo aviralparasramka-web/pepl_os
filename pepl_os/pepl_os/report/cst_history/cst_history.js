@@ -1,4 +1,4 @@
-frappe.query_reports["CST History (Per Item)"] = {
+frappe.query_reports["CST History"] = {
 	filters: [
 		{
 			fieldname: "item",

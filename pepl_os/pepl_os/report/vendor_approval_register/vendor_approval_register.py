@@ -13,14 +13,14 @@ def execute(filters=None):
 
 def get_columns():
     return [
-        {"label": _("Item"), "fieldname": "item", "fieldtype": "Link", "options": "Item", "width": 180},
-        {"label": _("Drawing No"), "fieldname": "drawing_no", "fieldtype": "Data", "width": 130},
-        {"label": _("Customer"), "fieldname": "customer", "fieldtype": "Link", "options": "Customer", "width": 180},
-        {"label": _("Sector"), "fieldname": "sector", "fieldtype": "Data", "width": 100},
-        {"label": _("Stage"), "fieldname": "current_stage", "fieldtype": "Data", "width": 160},
-        {"label": _("Status"), "fieldname": "approval_status", "fieldtype": "Data", "width": 120},
-        {"label": _("Last Updated"), "fieldname": "modified", "fieldtype": "Date", "width": 110},
-        {"label": _("Days in Stage"), "fieldname": "days_in_stage", "fieldtype": "Int", "width": 110},
+        {"label": _("Item"), "fieldname": "item", "fieldtype": "Link", "options": "Item", "width": 200},
+        {"label": _("Drawing No"), "fieldname": "drawing_no", "fieldtype": "Data", "width": 140},
+        {"label": _("Sector"), "fieldname": "sector", "fieldtype": "Data", "width": 110},
+        {"label": _("Sub-Sector"), "fieldname": "sub_sector", "fieldtype": "Data", "width": 130},
+        {"label": _("Stage"), "fieldname": "current_stage", "fieldtype": "Data", "width": 170},
+        {"label": _("Status"), "fieldname": "approval_status", "fieldtype": "Data", "width": 130},
+        {"label": _("Last Updated"), "fieldname": "modified", "fieldtype": "Date", "width": 120},
+        {"label": _("Days in Stage"), "fieldname": "days_in_stage", "fieldtype": "Int", "width": 120},
     ]
 
 
@@ -28,11 +28,9 @@ def get_data(filters):
     conditions = ["1=1"]
 
     if filters.get("sector"):
-        conditions.append("sector = %(sector)s")
-    if filters.get("customer"):
-        conditions.append("customer = %(customer)s")
+        conditions.append("vas.sector = %(sector)s")
     if filters.get("item"):
-        conditions.append("item = %(item)s")
+        conditions.append("vas.item = %(item)s")
 
     where_clause = " AND ".join(conditions)
 
@@ -41,7 +39,6 @@ def get_data(filters):
         SELECT
             vas.name,
             vas.item,
-            vas.customer,
             vas.sector,
             vas.railways_stage,
             vas.defence_stage,
@@ -63,10 +60,13 @@ def get_data(filters):
     for row in records:
         if row.sector == "Railways":
             stage = row.railways_stage or "Unapproved"
+            row["sub_sector"] = "Railways"
         elif row.sector == "Defence":
             stage = row.defence_stage or "Source Development"
+            row["sub_sector"] = "Defence"
         else:
             stage = "Unknown"
+            row["sub_sector"] = row.sector or "Unknown"
 
         row["current_stage"] = stage
 

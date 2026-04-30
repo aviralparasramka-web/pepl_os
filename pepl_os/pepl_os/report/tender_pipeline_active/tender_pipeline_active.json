@@ -10,11 +10,11 @@
  "modified": "2026-04-29 12:00:00",
  "modified_by": "Administrator",
  "module": "PEPL OS",
- "name": "Tender Pipeline (Active)",
+ "name": "Tender Pipeline Active",
  "owner": "Administrator",
  "prepared_report": 0,
  "ref_doctype": "PEPL Tender",
- "report_name": "Tender Pipeline (Active)",
+ "report_name": "Tender Pipeline Active",
  "report_type": "Script Report",
  "roles": [
   {"role": "System Manager"},

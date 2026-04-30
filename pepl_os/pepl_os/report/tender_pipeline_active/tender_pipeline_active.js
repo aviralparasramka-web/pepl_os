@@ -1,4 +1,4 @@
-frappe.query_reports["Tender Pipeline (Active)"] = {
+frappe.query_reports["Tender Pipeline Active"] = {
 	filters: [
 		{
 			fieldname: "sector",

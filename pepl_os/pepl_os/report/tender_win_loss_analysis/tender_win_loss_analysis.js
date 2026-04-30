@@ -1,4 +1,4 @@
-frappe.query_reports["Tender Win/Loss Analysis"] = {
+frappe.query_reports["Tender Win Loss Analysis"] = {
 	filters: [
 		{
 			fieldname: "from_date",

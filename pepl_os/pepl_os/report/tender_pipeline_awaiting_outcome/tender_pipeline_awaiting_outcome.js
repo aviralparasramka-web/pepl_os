@@ -1,4 +1,4 @@
-frappe.query_reports["Tender Pipeline (Awaiting Outcome)"] = {
+frappe.query_reports["Tender Pipeline Awaiting Outcome"] = {
 	filters: [
 		{
 			fieldname: "sector",

@@ -14,12 +14,6 @@ frappe.query_reports["Vendor Approval Register"] = {
 			options: "\nRailways\nDefence\nPrivate\nOthers"
 		},
 		{
-			fieldname: "customer",
-			label: __("Customer"),
-			fieldtype: "Link",
-			options: "Customer"
-		},
-		{
 			fieldname: "item",
 			label: __("Item"),
 			fieldtype: "Link",
