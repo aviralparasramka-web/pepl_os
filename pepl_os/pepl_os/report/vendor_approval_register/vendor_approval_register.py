@@ -24,6 +24,21 @@ def get_columns():
     ]
 
 
+def _drawing_no_column_exists():
+    """Check if custom_drawing_no column exists on tabItem."""
+    try:
+        result = frappe.db.sql("""
+            SELECT COLUMN_NAME
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = 'tabItem'
+              AND COLUMN_NAME = 'custom_drawing_no'
+            LIMIT 1
+        """)
+        return len(result) > 0
+    except Exception:
+        return False
+
+
 def get_data(filters):
     conditions = ["1=1"]
 
@@ -34,6 +49,10 @@ def get_data(filters):
 
     where_clause = " AND ".join(conditions)
 
+    has_drawing_col = _drawing_no_column_exists()
+    drawing_select = "i.custom_drawing_no as drawing_no" if has_drawing_col else "'' as drawing_no"
+    item_join = "LEFT JOIN `tabItem` i ON i.name = vas.item" if has_drawing_col else ""
+
     records = frappe.db.sql(
         f"""
         SELECT
@@ -43,9 +62,9 @@ def get_data(filters):
             vas.railways_stage,
             vas.defence_stage,
             vas.modified,
-            i.custom_drawing_no as drawing_no
+            {drawing_select}
         FROM `tabVendor Approval Status` vas
-        LEFT JOIN `tabItem` i ON i.name = vas.item
+        {item_join}
         WHERE {where_clause}
         ORDER BY vas.modified DESC
         """,
