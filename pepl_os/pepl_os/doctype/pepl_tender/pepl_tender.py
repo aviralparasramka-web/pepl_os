@@ -1,12 +1,12 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.model.naming import make_autoname
-from frappe.utils import getdate, today, flt
+from frappe.utils import getdate, today, flt, add_days
 
 
 class PEPLTender(Document):
     def autoname(self):
+        from frappe.model.naming import make_autoname
         self.tender_no = make_autoname("TND-.YYYY.-.####")
         self.name = self.tender_no
 
@@ -45,13 +45,11 @@ class PEPLTender(Document):
         self._calculate_summary()
         self._update_overall_status()
 
-        if self.status in ["Lost", "Won", "Partially Won"]:
-            if not self.technical_qualified:
-                frappe.msgprint(
-                    _("Please set Technical Qualification status for outcomes."),
-                    indicator="orange",
-                    alert=True,
-                )
+        if self.customer_po_received:
+            self.po_amount_received = sum(
+                flt(item.our_bid_total_value) for item in self.items
+                if item.outcome == "Won"
+            )
 
         if self.bid_submission_deadline and self.is_new():
             if getdate(self.bid_submission_deadline) < getdate(today()):
@@ -64,8 +62,7 @@ class PEPLTender(Document):
                 )
 
     def _fetch_item_details(self, item_row):
-        """Fetch drawing, spec, and vendor approval stage for an item row.
-        Updated to query PEPL Product Master instead of separate drawing/spec DocTypes."""
+        """Fetch drawing, spec, and vendor approval stage for an item row."""
 
         product = frappe.db.get_value(
             "PEPL Product Master",
@@ -118,7 +115,12 @@ class PEPLTender(Document):
         self.win_rate = (self.items_won / total_decided * 100) if total_decided > 0 else 0
 
     def _update_overall_status(self):
-        """Derive tender-level status from item-level outcomes."""
+        """Derive tender-level status from item-level outcomes.
+        Skip auto-update if status is already 'Order Received' — SO is locked."""
+
+        if self.status == "Order Received":
+            return
+
         if not self.items:
             return
 
@@ -136,8 +138,7 @@ class PEPLTender(Document):
 
 @frappe.whitelist()
 def auto_populate_bid_documents(tender_name):
-    """Auto-populate bid documents based on items' Vendor Approval Status.
-    Called from the Tender form via custom button."""
+    """Auto-populate bid documents based on items' Vendor Approval Status."""
 
     tender = frappe.get_doc("PEPL Tender", tender_name)
 
@@ -204,3 +205,124 @@ def get_tender_summary(filters=None):
     )
 
     return summary
+
+
+def _custom_field_exists_on_so(field_name):
+    """Check if a custom field column exists on tabSales Order."""
+    try:
+        result = frappe.db.sql(
+            """
+            SELECT COLUMN_NAME
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = 'tabSales Order'
+              AND COLUMN_NAME = %s
+            LIMIT 1
+            """,
+            field_name,
+        )
+        return len(result) > 0
+    except Exception:
+        return False
+
+
+@frappe.whitelist()
+def create_sales_order_from_tender(tender_name):
+    """Create Sales Order from a Won tender with Customer PO entered.
+
+    Validation gates:
+    - Tender must be Won or Partially Won
+    - Customer PO must be received (customer_po_received = 1)
+    - PO Number and PO Date required
+    - At least one item must be Won
+    - No existing linked Sales Order (prevents duplicates)
+
+    Pre-fills SO with customer, items, qty, rate from Tender Items.
+    Custom fields (tender_reference, nit_number, sector) set gracefully
+    if columns exist — skipped silently if not yet added.
+
+    Returns dict with sales_order name and URL for redirect.
+    """
+
+    tender = frappe.get_doc("PEPL Tender", tender_name)
+
+    if tender.status not in ["Won", "Partially Won"]:
+        frappe.throw(
+            _("Tender must be in 'Won' or 'Partially Won' status. Current status: {0}").format(
+                tender.status
+            )
+        )
+
+    if not tender.customer_po_received:
+        frappe.throw(
+            _("Customer PO/LOA must be received before creating Sales Order. "
+              "Tick 'Customer PO/LOA Received' first.")
+        )
+
+    if not tender.po_number:
+        frappe.throw(_("Customer PO Number is required"))
+
+    if not tender.po_date:
+        frappe.throw(_("Customer PO Date is required"))
+
+    if tender.linked_sales_order:
+        frappe.throw(
+            _("Sales Order {0} is already linked to this tender. "
+              "Delete the existing Sales Order first if you want to recreate.").format(
+                tender.linked_sales_order
+            )
+        )
+
+    won_items = [item for item in tender.items if item.outcome == "Won"]
+
+    if not won_items:
+        frappe.throw(
+            _("No items marked as 'Won'. Mark at least one item as Won before creating Sales Order.")
+        )
+
+    default_delivery = tender.po_delivery_date or add_days(today(), 30)
+
+    so = frappe.new_doc("Sales Order")
+    so.customer = tender.customer
+    so.po_no = tender.po_number
+    so.po_date = tender.po_date
+    so.delivery_date = default_delivery
+    so.transaction_date = today()
+
+    if tender.po_payment_terms:
+        so.payment_terms_template = tender.po_payment_terms
+
+    if _custom_field_exists_on_so("custom_tender_reference"):
+        so.custom_tender_reference = tender.name
+
+    if _custom_field_exists_on_so("custom_nit_number"):
+        so.custom_nit_number = tender.nit_number
+
+    if _custom_field_exists_on_so("custom_sector"):
+        so.custom_sector = tender.sector
+
+    for tender_item in won_items:
+        if tender_item.delivery_period_days:
+            item_delivery = add_days(tender.po_date or today(), int(tender_item.delivery_period_days))
+        else:
+            item_delivery = default_delivery
+
+        so.append("items", {
+            "item_code": tender_item.item,
+            "qty": tender_item.quantity,
+            "rate": tender_item.our_bid_unit_price,
+            "delivery_date": item_delivery,
+            "description": tender_item.remarks or "",
+        })
+
+    so.insert(ignore_permissions=True)
+
+    tender.linked_sales_order = so.name
+    tender.status = "Order Received"
+    tender.save(ignore_permissions=True)
+
+    return {
+        "sales_order": so.name,
+        "url": f"/app/sales-order/{so.name}",
+        "items_added": len(won_items),
+        "total_value": sum(flt(i.our_bid_total_value) for i in won_items),
+    }

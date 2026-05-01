@@ -54,6 +54,19 @@
   "column_break_6",
   "items_lost",
   "win_rate",
+  "po_section",
+  "customer_po_received",
+  "po_number",
+  "po_date",
+  "column_break_po_1",
+  "po_payment_terms",
+  "po_delivery_date",
+  "po_delivery_schedule",
+  "po_amount_received",
+  "po_remarks",
+  "so_section",
+  "linked_sales_order",
+  "so_status_display",
   "remarks_section",
   "remarks"
  ],
@@ -275,7 +288,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Active Bid\nSubmitted\nWon\nPartially Won\nLost\nNo Bid\nCancelled\nRe-tendered",
+   "options": "Active Bid\nSubmitted\nWon\nPartially Won\nOrder Received\nLost\nNo Bid\nCancelled\nRe-tendered",
    "default": "Active Bid",
    "reqd": 1
   },
@@ -349,6 +362,92 @@
    "fieldtype": "Percent",
    "label": "Win Rate (%)",
    "read_only": 1
+  },
+  {
+   "fieldname": "po_section",
+   "fieldtype": "Section Break",
+   "label": "Customer Purchase Order",
+   "depends_on": "eval:doc.status==\"Won\" || doc.status==\"Partially Won\" || doc.status==\"Order Received\"",
+   "description": "Once tender is Won, enter Customer's PO/LOA details to enable Sales Order creation"
+  },
+  {
+   "fieldname": "customer_po_received",
+   "fieldtype": "Check",
+   "label": "Customer PO/LOA Received",
+   "default": "0"
+  },
+  {
+   "fieldname": "po_number",
+   "fieldtype": "Data",
+   "label": "Customer PO Number",
+   "depends_on": "eval:doc.customer_po_received==1"
+  },
+  {
+   "fieldname": "po_date",
+   "fieldtype": "Date",
+   "label": "PO Date",
+   "depends_on": "eval:doc.customer_po_received==1"
+  },
+  {
+   "fieldname": "column_break_po_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "po_payment_terms",
+   "fieldtype": "Link",
+   "label": "Payment Terms",
+   "options": "Payment Terms Template",
+   "depends_on": "eval:doc.customer_po_received==1"
+  },
+  {
+   "fieldname": "po_delivery_date",
+   "fieldtype": "Date",
+   "label": "Required Delivery Date",
+   "depends_on": "eval:doc.customer_po_received==1",
+   "description": "Default delivery date for SO. Per-item delivery from Tender Item delivery_period_days will override."
+  },
+  {
+   "fieldname": "po_delivery_schedule",
+   "fieldtype": "Select",
+   "label": "Delivery Schedule Type",
+   "options": "Single Date\nLot-wise\nSchedule of Deliveries",
+   "default": "Single Date",
+   "depends_on": "eval:doc.customer_po_received==1"
+  },
+  {
+   "fieldname": "po_amount_received",
+   "fieldtype": "Currency",
+   "label": "PO Amount (INR)",
+   "read_only": 1,
+   "description": "Auto-calculated from won items",
+   "depends_on": "eval:doc.customer_po_received==1"
+  },
+  {
+   "fieldname": "po_remarks",
+   "fieldtype": "Small Text",
+   "label": "PO Remarks / Negotiation Notes",
+   "depends_on": "eval:doc.customer_po_received==1"
+  },
+  {
+   "fieldname": "so_section",
+   "fieldtype": "Section Break",
+   "label": "Sales Order",
+   "depends_on": "eval:doc.linked_sales_order"
+  },
+  {
+   "fieldname": "linked_sales_order",
+   "fieldtype": "Link",
+   "label": "Linked Sales Order",
+   "options": "Sales Order",
+   "read_only": 1,
+   "description": "Auto-created via 'Create Sales Order' button"
+  },
+  {
+   "fieldname": "so_status_display",
+   "fieldtype": "Data",
+   "label": "SO Status",
+   "read_only": 1,
+   "fetch_from": "linked_sales_order.status"
   },
   {
    "fieldname": "remarks_section",

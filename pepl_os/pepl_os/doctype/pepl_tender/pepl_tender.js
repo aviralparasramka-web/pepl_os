@@ -5,6 +5,7 @@ frappe.ui.form.on("PEPL Tender", {
 			"Submitted": "yellow",
 			"Won": "green",
 			"Partially Won": "green",
+			"Order Received": "purple",
 			"Lost": "red",
 			"No Bid": "grey",
 			"Cancelled": "grey",
@@ -51,13 +52,62 @@ frappe.ui.form.on("PEPL Tender", {
 			}, __("Documents"));
 		}
 
+		// CREATE SALES ORDER button — Module 4 automation
+		const can_create_so = !frm.is_new()
+			&& (frm.doc.status === "Won" || frm.doc.status === "Partially Won")
+			&& frm.doc.customer_po_received === 1
+			&& frm.doc.po_number
+			&& !frm.doc.linked_sales_order;
+
+		if (can_create_so) {
+			frm.add_custom_button(__("Create Sales Order"), function() {
+				const won_count = (frm.doc.items || []).filter(i => i.outcome === "Won").length;
+
+				frappe.confirm(
+					__("Create Sales Order with {0} won item(s)? You can edit quantity and rate in the Sales Order before submitting.", [won_count]),
+					function() {
+						frappe.call({
+							method: "pepl_os.pepl_os.doctype.pepl_tender.pepl_tender.create_sales_order_from_tender",
+							args: { tender_name: frm.doc.name },
+							freeze: true,
+							freeze_message: __("Creating Sales Order..."),
+							callback: function(r) {
+								if (r.message) {
+									frappe.show_alert({
+										message: __("Sales Order {0} created with {1} item(s)",
+											[r.message.sales_order, r.message.items_added]),
+										indicator: "green"
+									});
+									setTimeout(() => {
+										frappe.set_route("Form", "Sales Order", r.message.sales_order);
+									}, 1500);
+								}
+							}
+						});
+					}
+				);
+			}, __("Order")).addClass("btn-primary");
+		}
+
+		// If SO already linked — View Sales Order button + indicator
+		if (frm.doc.linked_sales_order) {
+			frm.add_custom_button(__("View Sales Order"), function() {
+				frappe.set_route("Form", "Sales Order", frm.doc.linked_sales_order);
+			}, __("Order"));
+
+			frm.dashboard.add_indicator(
+				__("Order Received: {0}", [frm.doc.linked_sales_order]),
+				"purple"
+			);
+		}
+
 		// Financial summary in dashboard
 		if (!frm.is_new() && frm.doc.total_estimated_value) {
 			const win_info = frm.doc.win_rate ? ` | Win Rate: ${frm.doc.win_rate.toFixed(1)}%` : "";
 			const est = frappe.format(frm.doc.total_estimated_value, { fieldtype: "Currency" });
 			const bid = frappe.format(frm.doc.total_bid_value || 0, { fieldtype: "Currency" });
 			frm.dashboard.add_comment(
-				`Est: ₹${est} | Bid: ₹${bid}${win_info}`,
+				`Est: \u20b9${est} | Bid: \u20b9${bid}${win_info}`,
 				"blue",
 				true
 			);
@@ -93,6 +143,12 @@ frappe.ui.form.on("PEPL Tender", {
 	emd_required(frm) {
 		if (frm.doc.emd_required) {
 			frm.set_value("bid_securing_declaration", 0);
+		}
+	},
+
+	customer_po_received(frm) {
+		if (frm.doc.customer_po_received && !frm.doc.po_date) {
+			frm.set_value("po_date", frappe.datetime.get_today());
 		}
 	}
 });
