@@ -47,20 +47,20 @@
    "reqd": 1
   },
   {
-   "fetch_from": "item.custom_pl_no",
    "fieldname": "pl_no",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "PL Number",
-   "read_only": 1
+   "read_only": 1,
+   "description": "Auto-fetched on save from Item or PEPL Product Master"
   },
   {
-   "fetch_from": "item.custom_drawing_no",
    "fieldname": "drawing_no",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Drawing Number",
-   "read_only": 1
+   "read_only": 1,
+   "description": "Auto-fetched on save from Item or PEPL Product Master"
   },
   {
    "fieldname": "column_break_1",

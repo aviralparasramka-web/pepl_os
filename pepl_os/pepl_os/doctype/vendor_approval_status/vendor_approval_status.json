@@ -44,24 +44,24 @@
    "reqd": 1
   },
   {
-   "fetch_from": "item.custom_pl_no",
    "fieldname": "pl_no",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "PL Number"
+   "label": "PL Number",
+   "description": "Auto-fetched on save from Item custom fields"
   },
   {
-   "fetch_from": "item.custom_drawing_no",
    "fieldname": "drawing_no",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Drawing Number"
+   "label": "Drawing Number",
+   "description": "Auto-fetched on save from Item custom fields"
   },
   {
-   "fetch_from": "item.custom_drawing_rev",
    "fieldname": "drawing_rev",
    "fieldtype": "Data",
-   "label": "Drawing Revision"
+   "label": "Drawing Revision",
+   "description": "Auto-fetched on save from Item custom fields"
   },
   {
    "fieldname": "column_break_1",

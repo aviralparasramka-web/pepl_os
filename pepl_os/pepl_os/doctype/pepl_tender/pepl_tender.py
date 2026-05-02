@@ -62,17 +62,53 @@ class PEPLTender(Document):
                 )
 
     def _fetch_item_details(self, item_row):
-        """Fetch drawing, spec, and vendor approval stage for an item row."""
+        """Fetch drawing, spec, vendor approval stage, PL number for an item row.
+        Uses frappe.db.has_column to check field existence before query —
+        bypasses field-level permission errors on custom fields."""
 
+        # Fetch PL Number and Drawing Number from Item (custom fields)
+        if item_row.item:
+            has_pl = frappe.db.has_column("Item", "custom_pl_no")
+            has_drawing = frappe.db.has_column("Item", "custom_drawing_no")
+
+            if has_pl or has_drawing:
+                select_fields = ["name"]
+                if has_pl:
+                    select_fields.append("custom_pl_no")
+                if has_drawing:
+                    select_fields.append("custom_drawing_no")
+
+                fields_str = ", ".join(select_fields)
+
+                item_data = frappe.db.sql(
+                    f"SELECT {fields_str} FROM `tabItem` WHERE name = %s LIMIT 1",
+                    item_row.item,
+                    as_dict=True,
+                )
+
+                if item_data:
+                    if has_pl and "custom_pl_no" in item_data[0]:
+                        item_row.pl_no = item_data[0].custom_pl_no
+                    if has_drawing and "custom_drawing_no" in item_data[0]:
+                        item_row.drawing_no = item_data[0].custom_drawing_no
+
+        # Fetch from PEPL Product Master for drawing revision, spec, and fallback PL/Drawing
         product = frappe.db.get_value(
             "PEPL Product Master",
             {"linked_item": item_row.item},
-            ["name", "current_drawing_revision", "drawing_number"],
+            ["name", "current_drawing_revision", "drawing_number", "pl_number"],
             as_dict=True,
         )
 
         if product:
             item_row.current_drawing_revision = product.current_drawing_revision
+
+            # Fallback: use Product Master values if Item custom fields were empty
+            if not item_row.pl_no and product.pl_number:
+                item_row.pl_no = product.pl_number
+
+            if not item_row.drawing_no and product.drawing_number:
+                item_row.drawing_no = product.drawing_number
 
             primary_spec = frappe.db.sql(
                 """
@@ -87,6 +123,7 @@ class PEPLTender(Document):
             if primary_spec:
                 item_row.current_specification = primary_spec[0].spec_title
 
+        # Fetch vendor approval stage
         vas = frappe.db.get_value(
             "Vendor Approval Status",
             {"item": item_row.item, "sector": self.sector},
