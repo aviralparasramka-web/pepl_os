@@ -12,7 +12,7 @@ frappe.ui.form.on("PEPL Tender", {
 			"Re-tendered": "orange"
 		};
 		if (frm.doc.status) {
-			frm.set_indicator(frm.doc.status, status_colors[frm.doc.status]);
+			frm.page.set_indicator(frm.doc.status, status_colors[frm.doc.status]);
 		}
 
 		// Deadline urgency indicator

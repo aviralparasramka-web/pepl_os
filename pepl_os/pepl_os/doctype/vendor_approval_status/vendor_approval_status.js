@@ -6,13 +6,13 @@ frappe.ui.form.on("Vendor Approval Status", {
 				"Developmental": "orange",
 				"Approved": "green"
 			};
-			frm.set_indicator(frm.doc.railways_stage, colors[frm.doc.railways_stage]);
+			frm.page.set_indicator(frm.doc.railways_stage, colors[frm.doc.railways_stage]);
 		} else if (frm.doc.sector === "Defence" && frm.doc.defence_stage) {
 			const colors = {
 				"Source Development": "orange",
 				"Approved / Established": "green"
 			};
-			frm.set_indicator(frm.doc.defence_stage, colors[frm.doc.defence_stage]);
+			frm.page.set_indicator(frm.doc.defence_stage, colors[frm.doc.defence_stage]);
 		}
 
 		if (frm.doc.sector && (frm.doc.railways_stage || frm.doc.defence_stage)) {

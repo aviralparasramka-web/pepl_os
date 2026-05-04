@@ -6,18 +6,18 @@ frappe.ui.form.on("PEPL Company Document", {
 			const days_to_expiry = Math.floor((expiry - today) / (1000 * 60 * 60 * 24));
 
 			if (days_to_expiry < 0) {
-				frm.set_indicator("Expired", "red");
+				frm.page.set_indicator("Expired", "red");
 			} else if (days_to_expiry < 30) {
-				frm.set_indicator(`Expires in ${days_to_expiry} days`, "orange");
+				frm.page.set_indicator(`Expires in ${days_to_expiry} days`, "orange");
 			} else if (days_to_expiry < 90) {
-				frm.set_indicator(`Expires in ${days_to_expiry} days`, "yellow");
+				frm.page.set_indicator(`Expires in ${days_to_expiry} days`, "yellow");
 			} else {
-				frm.set_indicator("Active", "green");
+				frm.page.set_indicator("Active", "green");
 			}
 		} else if (frm.doc.is_active) {
-			frm.set_indicator("Active (no expiry)", "green");
+			frm.page.set_indicator("Active (no expiry)", "green");
 		} else {
-			frm.set_indicator("Inactive", "grey");
+			frm.page.set_indicator("Inactive", "grey");
 		}
 
 		if (!frm.is_new()) {

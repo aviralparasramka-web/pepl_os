@@ -1,9 +1,9 @@
 frappe.ui.form.on("PEPL RM Group", {
 	refresh(frm) {
 		if (frm.doc.is_active) {
-			frm.set_indicator("Active", "green");
+			frm.page.set_indicator("Active", "green");
 		} else {
-			frm.set_indicator("Inactive", "grey");
+			frm.page.set_indicator("Inactive", "grey");
 		}
 	}
 });

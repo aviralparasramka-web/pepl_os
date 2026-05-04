@@ -6,7 +6,7 @@ frappe.ui.form.on("PEPL Product Master", {
 			"Obsolete": "red"
 		};
 		if (frm.doc.status) {
-			frm.set_indicator(frm.doc.status, status_colors[frm.doc.status]);
+			frm.page.set_indicator(frm.doc.status, status_colors[frm.doc.status]);
 		}
 
 		if (!frm.is_new()) {
