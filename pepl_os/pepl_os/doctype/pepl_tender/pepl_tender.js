@@ -52,19 +52,56 @@ frappe.ui.form.on("PEPL Tender", {
 			}, __("Documents"));
 		}
 
-		// CREATE SALES ORDER button — Module 4 automation
+		// Sync from Won Items button (when PO Received)
+		const can_sync_po_items = !frm.is_new()
+			&& frm.doc.customer_po_received === 1
+			&& (frm.doc.status === "Won" || frm.doc.status === "Partially Won");
+
+		if (can_sync_po_items) {
+			frm.add_custom_button(__("Sync from Won Items"), function() {
+				const won_count = (frm.doc.items || []).filter(i => i.outcome === "Won").length;
+				if (won_count === 0) {
+					frappe.msgprint(__("Mark at least one item as Won first"));
+					return;
+				}
+
+				frappe.confirm(
+					__("Add {0} Won items to PO Items? Existing PO Items will be preserved. New items added with PO Qty/Rate defaulting to bid values.", [won_count]),
+					function() {
+						frappe.call({
+							method: "pepl_os.pepl_os.doctype.pepl_tender.pepl_tender.sync_po_items_from_won",
+							args: { tender_name: frm.doc.name },
+							callback: function(r) {
+								if (r.message) {
+									frappe.show_alert({
+										message: __("Added {0} PO Items from {1} Won items",
+											[r.message.added, r.message.won_count]),
+										indicator: "green"
+									});
+									frm.reload_doc();
+								}
+							}
+						});
+					}
+				);
+			}, __("PO Items"));
+		}
+
+		// Create Sales Order button — uses PO Items
 		const can_create_so = !frm.is_new()
 			&& (frm.doc.status === "Won" || frm.doc.status === "Partially Won")
 			&& frm.doc.customer_po_received === 1
 			&& frm.doc.po_number
+			&& frm.doc.po_items
+			&& frm.doc.po_items.length > 0
 			&& !frm.doc.linked_sales_order;
 
 		if (can_create_so) {
 			frm.add_custom_button(__("Create Sales Order"), function() {
-				const won_count = (frm.doc.items || []).filter(i => i.outcome === "Won").length;
+				const items_count = (frm.doc.po_items || []).length;
 
 				frappe.confirm(
-					__("Create Sales Order with {0} won item(s)? You can edit quantity and rate in the Sales Order before submitting.", [won_count]),
+					__("Create Sales Order with {0} PO items? You can edit quantity and rate in the Sales Order before submitting.", [items_count]),
 					function() {
 						frappe.call({
 							method: "pepl_os.pepl_os.doctype.pepl_tender.pepl_tender.create_sales_order_from_tender",
@@ -179,6 +216,25 @@ frappe.ui.form.on("PEPL Tender Item", {
 		if (row.quantity && row.our_bid_unit_price) {
 			frappe.model.set_value(cdt, cdn, "our_bid_total_value",
 				row.quantity * row.our_bid_unit_price);
+		}
+	}
+});
+
+// PO Items child table — real-time recalc on edit
+frappe.ui.form.on("PEPL Tender PO Item", {
+	po_quantity(frm, cdt, cdn) {
+		const row = locals[cdt][cdn];
+		if (row.po_quantity && row.po_rate) {
+			frappe.model.set_value(cdt, cdn, "po_total",
+				row.po_quantity * row.po_rate);
+		}
+	},
+
+	po_rate(frm, cdt, cdn) {
+		const row = locals[cdt][cdn];
+		if (row.po_quantity && row.po_rate) {
+			frappe.model.set_value(cdt, cdn, "po_total",
+				row.po_quantity * row.po_rate);
 		}
 	}
 });

@@ -64,6 +64,8 @@
   "po_delivery_schedule",
   "po_amount_received",
   "po_remarks",
+  "po_items_section",
+  "po_items",
   "so_section",
   "linked_sales_order",
   "so_status_display",
@@ -426,6 +428,20 @@
    "fieldname": "po_remarks",
    "fieldtype": "Small Text",
    "label": "PO Remarks / Negotiation Notes",
+   "depends_on": "eval:doc.customer_po_received==1"
+  },
+  {
+   "fieldname": "po_items_section",
+   "fieldtype": "Section Break",
+   "label": "PO Items — Actual Order Details",
+   "depends_on": "eval:doc.customer_po_received==1",
+   "description": "Auto-populated from Won Tender Items. Edit PO Quantity and PO Rate to reflect actual customer order. Click 'Sync from Won Items' button if needed."
+  },
+  {
+   "fieldname": "po_items",
+   "fieldtype": "Table",
+   "label": "PO Items",
+   "options": "PEPL Tender PO Item",
    "depends_on": "eval:doc.customer_po_received==1"
   },
   {

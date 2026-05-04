@@ -11,6 +11,7 @@ class PEPLTender(Document):
         self.name = self.tender_no
 
     def validate(self):
+        # Auto-set sub-sector from customer group if not already set
         if self.customer_group and not self.sub_sector:
             cg = self.customer_group
             mapping = {
@@ -22,11 +23,12 @@ class PEPLTender(Document):
                 "Defence - AWEIL": "Defence - AWEIL",
                 "Defence - Private": "Defence - Private",
                 "Private Sector": "Private Sector",
-                "PSU": "PSU",
+                "PSU": "PSU"
             }
             if cg in mapping:
                 self.sub_sector = mapping[cg]
 
+        # Auto-set sector from customer group
         if self.customer_group and not self.sector:
             if "Railways" in self.customer_group:
                 self.sector = "Railways"
@@ -37,20 +39,32 @@ class PEPLTender(Document):
             else:
                 self.sector = "Others"
 
+        # Auto-fetch vendor approval stage and drawing/spec for each item
         if self.items:
             for item_row in self.items:
                 if item_row.item and self.sector:
                     self._fetch_item_details(item_row)
 
+        # Calculate summary fields
         self._calculate_summary()
+
+        # Auto-update overall status based on item outcomes
         self._update_overall_status()
 
-        if self.customer_po_received:
-            self.po_amount_received = sum(
-                flt(item.our_bid_total_value) for item in self.items
-                if item.outcome == "Won"
-            )
+        # Recalculate PO Items totals server-side
+        if self.po_items:
+            for po_item in self.po_items:
+                qty = flt(po_item.po_quantity) or 0
+                rate = flt(po_item.po_rate) or 0
+                po_item.po_total = qty * rate
 
+        # po_amount_received calculated from PO Items, not bids
+        if self.customer_po_received and self.po_items:
+            self.po_amount_received = sum(flt(p.po_total) for p in self.po_items)
+        elif self.customer_po_received and not self.po_items:
+            self.po_amount_received = 0
+
+        # Validation: bid deadline check
         if self.bid_submission_deadline and self.is_new():
             if getdate(self.bid_submission_deadline) < getdate(today()):
                 frappe.msgprint(
@@ -58,7 +72,7 @@ class PEPLTender(Document):
                         self.bid_submission_deadline
                     ),
                     indicator="orange",
-                    alert=True,
+                    alert=True
                 )
 
     def _fetch_item_details(self, item_row):
@@ -66,7 +80,6 @@ class PEPLTender(Document):
         Uses frappe.db.has_column to check field existence before query —
         bypasses field-level permission errors on custom fields."""
 
-        # Fetch PL Number and Drawing Number from Item (custom fields)
         if item_row.item:
             has_pl = frappe.db.has_column("Item", "custom_pl_no")
             has_drawing = frappe.db.has_column("Item", "custom_drawing_no")
@@ -80,11 +93,12 @@ class PEPLTender(Document):
 
                 fields_str = ", ".join(select_fields)
 
-                item_data = frappe.db.sql(
-                    f"SELECT {fields_str} FROM `tabItem` WHERE name = %s LIMIT 1",
-                    item_row.item,
-                    as_dict=True,
-                )
+                item_data = frappe.db.sql(f"""
+                    SELECT {fields_str}
+                    FROM `tabItem`
+                    WHERE name = %s
+                    LIMIT 1
+                """, item_row.item, as_dict=True)
 
                 if item_data:
                     if has_pl and "custom_pl_no" in item_data[0]:
@@ -92,43 +106,36 @@ class PEPLTender(Document):
                     if has_drawing and "custom_drawing_no" in item_data[0]:
                         item_row.drawing_no = item_data[0].custom_drawing_no
 
-        # Fetch from PEPL Product Master for drawing revision, spec, and fallback PL/Drawing
         product = frappe.db.get_value(
             "PEPL Product Master",
             {"linked_item": item_row.item},
             ["name", "current_drawing_revision", "drawing_number", "pl_number"],
-            as_dict=True,
+            as_dict=True
         )
 
         if product:
             item_row.current_drawing_revision = product.current_drawing_revision
 
-            # Fallback: use Product Master values if Item custom fields were empty
             if not item_row.pl_no and product.pl_number:
                 item_row.pl_no = product.pl_number
 
             if not item_row.drawing_no and product.drawing_number:
                 item_row.drawing_no = product.drawing_number
 
-            primary_spec = frappe.db.sql(
-                """
+            primary_spec = frappe.db.sql("""
                 SELECT spec_title FROM `tabPEPL Product Specification`
                 WHERE parent = %s AND status = 'Active'
                 ORDER BY creation ASC LIMIT 1
-                """,
-                product.name,
-                as_dict=True,
-            )
+            """, product.name, as_dict=True)
 
             if primary_spec:
                 item_row.current_specification = primary_spec[0].spec_title
 
-        # Fetch vendor approval stage
         vas = frappe.db.get_value(
             "Vendor Approval Status",
             {"item": item_row.item, "sector": self.sector},
             ["railways_stage", "defence_stage"],
-            as_dict=True,
+            as_dict=True
         )
         if vas:
             if self.sector == "Railways":
@@ -139,13 +146,10 @@ class PEPLTender(Document):
             item_row.vendor_approval_stage = "No Record"
 
     def _calculate_summary(self):
-        """Auto-calculate total estimated, total bid, and win/loss counts.
-        Server-side recalculation of row totals — independent of JS state.
-        Each row's totals are recomputed authoritatively before summing."""
+        """Server-side recalculation of row totals — independent of JS state."""
         if not self.items:
             return
 
-        # Step 1: Recalculate each row's totals server-side (don't trust JS state)
         for item in self.items:
             qty = flt(item.quantity) or 0
             est_unit = flt(item.estimated_unit_price) or 0
@@ -154,15 +158,12 @@ class PEPLTender(Document):
             item.estimated_total_value = qty * est_unit
             item.our_bid_total_value = qty * our_unit
 
-        # Step 2: Sum up parent totals from authoritative row values
         self.total_estimated_value = sum(flt(i.estimated_total_value) for i in self.items)
         self.total_bid_value = sum(flt(i.our_bid_total_value) for i in self.items)
 
-        # Step 3: Count won/lost items
         self.items_won = sum(1 for i in self.items if i.outcome == "Won")
         self.items_lost = sum(1 for i in self.items if i.outcome == "Lost")
 
-        # Step 4: Calculate win rate
         total_decided = self.items_won + self.items_lost
         if total_decided > 0:
             self.win_rate = (self.items_won / total_decided) * 100
@@ -209,9 +210,7 @@ def auto_populate_bid_documents(tender_name):
         if item_row.vendor_approval_stage:
             stages_seen.add(item_row.vendor_approval_stage)
 
-    from pepl_os.pepl_os.doctype.vendor_approval_status.vendor_approval_status import (
-        get_required_documents,
-    )
+    from pepl_os.pepl_os.doctype.vendor_approval_status.vendor_approval_status import get_required_documents
 
     all_required_docs = set()
     for stage in stages_seen:
@@ -220,19 +219,22 @@ def auto_populate_bid_documents(tender_name):
             if isinstance(required, list):
                 all_required_docs.update(required)
 
+    # Always add baseline if no stages had data
+    if not all_required_docs:
+        baseline = get_required_documents(sector, "Unapproved")
+        if isinstance(baseline, list):
+            all_required_docs.update(baseline)
+
     existing_doc_types = {d.document_type for d in tender.bid_documents}
     added = 0
     for doc_type in all_required_docs:
         if doc_type not in existing_doc_types:
-            tender.append(
-                "bid_documents",
-                {
-                    "document_source": "Auto-Required",
-                    "document_type": doc_type,
-                    "is_mandatory": 1,
-                    "is_attached": 0,
-                },
-            )
+            tender.append("bid_documents", {
+                "document_source": "Auto-Required",
+                "document_type": doc_type,
+                "is_mandatory": 1,
+                "is_attached": 0
+            })
             added += 1
 
     tender.save()
@@ -240,11 +242,50 @@ def auto_populate_bid_documents(tender_name):
 
 
 @frappe.whitelist()
+def sync_po_items_from_won(tender_name):
+    """Auto-populate po_items from Won Tender Items.
+    Each Won item creates a PO Item row with po_qty/po_rate defaulted
+    to bid values. User then edits as needed."""
+
+    tender = frappe.get_doc("PEPL Tender", tender_name)
+
+    won_items = [item for item in tender.items if item.outcome == "Won"]
+
+    if not won_items:
+        frappe.throw(_("No Won items found. Mark items as Won first."))
+
+    # Track existing PO Item rows by linked_tender_item to avoid duplicates
+    existing_links = {p.linked_tender_item: p for p in tender.po_items}
+
+    added = 0
+    for tender_item in won_items:
+        if tender_item.name in existing_links:
+            continue
+
+        tender.append("po_items", {
+            "linked_tender_item": tender_item.name,
+            "item": tender_item.item,
+            "pl_no": tender_item.pl_no,
+            "drawing_no": tender_item.drawing_no,
+            "tendered_quantity": tender_item.quantity,
+            "tendered_rate": tender_item.our_bid_unit_price,
+            "tendered_total": tender_item.our_bid_total_value,
+            "po_quantity": tender_item.quantity,
+            "po_rate": tender_item.our_bid_unit_price,
+            "po_total": tender_item.our_bid_total_value,
+            "delivery_period_days": tender_item.delivery_period_days
+        })
+        added += 1
+
+    tender.save()
+    return {"added": added, "won_count": len(won_items)}
+
+
+@frappe.whitelist()
 def get_tender_summary(filters=None):
     """Returns aggregated tender pipeline summary for dashboards."""
 
-    summary = frappe.db.sql(
-        """
+    summary = frappe.db.sql("""
         SELECT
             sector,
             status,
@@ -255,9 +296,7 @@ def get_tender_summary(filters=None):
         FROM `tabPEPL Tender`
         GROUP BY sector, status
         ORDER BY sector, status
-        """,
-        as_dict=True,
-    )
+    """, as_dict=True)
 
     return summary
 
@@ -265,16 +304,13 @@ def get_tender_summary(filters=None):
 def _custom_field_exists_on_so(field_name):
     """Check if a custom field column exists on tabSales Order."""
     try:
-        result = frappe.db.sql(
-            """
+        result = frappe.db.sql("""
             SELECT COLUMN_NAME
             FROM INFORMATION_SCHEMA.COLUMNS
             WHERE TABLE_NAME = 'tabSales Order'
               AND COLUMN_NAME = %s
             LIMIT 1
-            """,
-            field_name,
-        )
+        """, field_name)
         return len(result) > 0
     except Exception:
         return False
@@ -282,19 +318,16 @@ def _custom_field_exists_on_so(field_name):
 
 @frappe.whitelist()
 def create_sales_order_from_tender(tender_name):
-    """Create Sales Order from a Won tender with Customer PO entered.
+    """Create Sales Order from a Won tender using PO Items quantities and rates.
 
     Validation gates:
     - Tender must be Won or Partially Won
-    - Customer PO must be received (customer_po_received = 1)
+    - Customer PO must be received
     - PO Number and PO Date required
-    - At least one item must be Won
+    - PO Items must be populated (use Sync from Won Items first)
     - No existing linked Sales Order (prevents duplicates)
 
-    Pre-fills SO with customer, items, qty, rate from Tender Items.
-    Custom fields (tender_reference, nit_number, sector) set gracefully
-    if columns exist — skipped silently if not yet added.
-
+    Uses PO Items (not bid items) — captures actual negotiated order.
     Returns dict with sales_order name and URL for redirect.
     """
 
@@ -327,11 +360,9 @@ def create_sales_order_from_tender(tender_name):
             )
         )
 
-    won_items = [item for item in tender.items if item.outcome == "Won"]
-
-    if not won_items:
+    if not tender.po_items:
         frappe.throw(
-            _("No items marked as 'Won'. Mark at least one item as Won before creating Sales Order.")
+            _("No PO Items defined. Click 'Sync from Won Items' button to populate PO Items first.")
         )
 
     default_delivery = tender.po_delivery_date or add_days(today(), 30)
@@ -355,18 +386,18 @@ def create_sales_order_from_tender(tender_name):
     if _custom_field_exists_on_so("custom_sector"):
         so.custom_sector = tender.sector
 
-    for tender_item in won_items:
-        if tender_item.delivery_period_days:
-            item_delivery = add_days(tender.po_date or today(), int(tender_item.delivery_period_days))
+    # Use PO Items — not Won Tender Items
+    for po_item in tender.po_items:
+        if po_item.delivery_period_days:
+            item_delivery = add_days(tender.po_date or today(), int(po_item.delivery_period_days))
         else:
             item_delivery = default_delivery
 
         so.append("items", {
-            "item_code": tender_item.item,
-            "qty": tender_item.quantity,
-            "rate": tender_item.our_bid_unit_price,
-            "delivery_date": item_delivery,
-            "description": tender_item.remarks or "",
+            "item_code": po_item.item,
+            "qty": po_item.po_quantity,
+            "rate": po_item.po_rate,
+            "delivery_date": item_delivery
         })
 
     so.insert(ignore_permissions=True)
@@ -378,6 +409,6 @@ def create_sales_order_from_tender(tender_name):
     return {
         "sales_order": so.name,
         "url": f"/app/sales-order/{so.name}",
-        "items_added": len(won_items),
-        "total_value": sum(flt(i.our_bid_total_value) for i in won_items),
+        "items_added": len(tender.po_items),
+        "total_value": sum(flt(p.po_total) for p in tender.po_items)
     }

@@ -1,0 +1,134 @@
+{
+ "actions": [],
+ "creation": "2026-05-04 15:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "linked_tender_item",
+  "item",
+  "pl_no",
+  "drawing_no",
+  "tender_section",
+  "tendered_quantity",
+  "tendered_rate",
+  "column_break_1",
+  "tendered_total",
+  "po_section",
+  "po_quantity",
+  "po_rate",
+  "column_break_2",
+  "po_total",
+  "delivery_period_days"
+ ],
+ "fields": [
+  {
+   "fieldname": "linked_tender_item",
+   "fieldtype": "Data",
+   "label": "Linked Tender Item Row",
+   "read_only": 1,
+   "hidden": 1,
+   "description": "Internal reference for traceability"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item",
+   "reqd": 1,
+   "read_only": 1,
+   "description": "Copied from Won Tender Item"
+  },
+  {
+   "fieldname": "pl_no",
+   "fieldtype": "Data",
+   "label": "PL Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "drawing_no",
+   "fieldtype": "Data",
+   "label": "Drawing Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tender_section",
+   "fieldtype": "Section Break",
+   "label": "Tendered (Reference)"
+  },
+  {
+   "fieldname": "tendered_quantity",
+   "fieldtype": "Float",
+   "label": "Tendered Quantity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tendered_rate",
+   "fieldtype": "Currency",
+   "label": "Tendered Rate",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tendered_total",
+   "fieldtype": "Currency",
+   "label": "Tendered Total",
+   "read_only": 1
+  },
+  {
+   "fieldname": "po_section",
+   "fieldtype": "Section Break",
+   "label": "Customer PO (Editable — capture actual order)"
+  },
+  {
+   "fieldname": "po_quantity",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "PO Quantity",
+   "reqd": 1,
+   "description": "Actual quantity ordered by customer (may differ from bid)"
+  },
+  {
+   "fieldname": "po_rate",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "PO Rate (INR)",
+   "reqd": 1,
+   "description": "Agreed rate from PO (may differ from bid)"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "po_total",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "PO Total",
+   "read_only": 1
+  },
+  {
+   "fieldname": "delivery_period_days",
+   "fieldtype": "Int",
+   "label": "Delivery Period (Days)",
+   "description": "Days from PO date to delivery. Defaults from tender item."
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-05-04 15:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "PEPL Tender PO Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "ASC",
+ "states": [],
+ "track_changes": 1
+}
