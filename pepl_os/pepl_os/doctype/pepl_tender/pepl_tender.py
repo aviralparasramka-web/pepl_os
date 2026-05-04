@@ -139,17 +139,35 @@ class PEPLTender(Document):
             item_row.vendor_approval_stage = "No Record"
 
     def _calculate_summary(self):
-        """Auto-calculate totals and win/loss counts from line items."""
+        """Auto-calculate total estimated, total bid, and win/loss counts.
+        Server-side recalculation of row totals — independent of JS state.
+        Each row's totals are recomputed authoritatively before summing."""
         if not self.items:
             return
 
+        # Step 1: Recalculate each row's totals server-side (don't trust JS state)
+        for item in self.items:
+            qty = flt(item.quantity) or 0
+            est_unit = flt(item.estimated_unit_price) or 0
+            our_unit = flt(item.our_bid_unit_price) or 0
+
+            item.estimated_total_value = qty * est_unit
+            item.our_bid_total_value = qty * our_unit
+
+        # Step 2: Sum up parent totals from authoritative row values
         self.total_estimated_value = sum(flt(i.estimated_total_value) for i in self.items)
         self.total_bid_value = sum(flt(i.our_bid_total_value) for i in self.items)
+
+        # Step 3: Count won/lost items
         self.items_won = sum(1 for i in self.items if i.outcome == "Won")
         self.items_lost = sum(1 for i in self.items if i.outcome == "Lost")
 
+        # Step 4: Calculate win rate
         total_decided = self.items_won + self.items_lost
-        self.win_rate = (self.items_won / total_decided * 100) if total_decided > 0 else 0
+        if total_decided > 0:
+            self.win_rate = (self.items_won / total_decided) * 100
+        else:
+            self.win_rate = 0
 
     def _update_overall_status(self):
         """Derive tender-level status from item-level outcomes.
