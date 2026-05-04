@@ -58,14 +58,10 @@
   "customer_po_received",
   "po_number",
   "po_date",
-  "column_break_po_1",
   "po_payment_terms",
-  "po_delivery_date",
-  "po_delivery_schedule",
+  "po_schedule_section",
+  "po_schedule",
   "po_amount_received",
-  "po_remarks",
-  "po_items_section",
-  "po_items",
   "so_section",
   "linked_sales_order",
   "so_status_display",
@@ -391,10 +387,6 @@
    "depends_on": "eval:doc.customer_po_received==1"
   },
   {
-   "fieldname": "column_break_po_1",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "po_payment_terms",
    "fieldtype": "Link",
    "label": "Payment Terms",
@@ -402,46 +394,25 @@
    "depends_on": "eval:doc.customer_po_received==1"
   },
   {
-   "fieldname": "po_delivery_date",
-   "fieldtype": "Date",
-   "label": "Required Delivery Date",
-   "depends_on": "eval:doc.customer_po_received==1",
-   "description": "Default delivery date for SO. Per-item delivery from Tender Item delivery_period_days will override."
-  },
-  {
-   "fieldname": "po_delivery_schedule",
-   "fieldtype": "Select",
-   "label": "Delivery Schedule Type",
-   "options": "Single Date\nLot-wise\nSchedule of Deliveries",
-   "default": "Single Date",
-   "depends_on": "eval:doc.customer_po_received==1"
-  },
-  {
    "fieldname": "po_amount_received",
    "fieldtype": "Currency",
-   "label": "PO Amount (INR)",
+   "label": "Total PO Value (INR)",
    "read_only": 1,
-   "description": "Auto-calculated from won items",
-   "depends_on": "eval:doc.customer_po_received==1"
-  },
-  {
-   "fieldname": "po_remarks",
-   "fieldtype": "Small Text",
-   "label": "PO Remarks / Negotiation Notes",
-   "depends_on": "eval:doc.customer_po_received==1"
-  },
-  {
-   "fieldname": "po_items_section",
-   "fieldtype": "Section Break",
-   "label": "PO Items — Actual Order Details",
    "depends_on": "eval:doc.customer_po_received==1",
-   "description": "Auto-populated from Won Tender Items. Edit PO Quantity and PO Rate to reflect actual customer order. Click 'Sync from Won Items' button if needed."
+   "description": "Auto-calculated: sum of all PO Schedule line totals"
   },
   {
-   "fieldname": "po_items",
+   "fieldname": "po_schedule_section",
+   "fieldtype": "Section Break",
+   "label": "PO Schedule (Sl. No. wise delivery batches)",
+   "depends_on": "eval:doc.customer_po_received==1",
+   "description": "Add one row per delivery batch. Same item can be added multiple times with different delivery dates and quantities."
+  },
+  {
+   "fieldname": "po_schedule",
    "fieldtype": "Table",
-   "label": "PO Items",
-   "options": "PEPL Tender PO Item",
+   "label": "PO Schedule",
+   "options": "PEPL Tender PO Schedule",
    "depends_on": "eval:doc.customer_po_received==1"
   },
   {

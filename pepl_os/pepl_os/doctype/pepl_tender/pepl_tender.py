@@ -51,18 +51,8 @@ class PEPLTender(Document):
         # Auto-update overall status based on item outcomes
         self._update_overall_status()
 
-        # Recalculate PO Items totals server-side
-        if self.po_items:
-            for po_item in self.po_items:
-                qty = flt(po_item.po_quantity) or 0
-                rate = flt(po_item.po_rate) or 0
-                po_item.po_total = qty * rate
-
-        # po_amount_received calculated from PO Items, not bids
-        if self.customer_po_received and self.po_items:
-            self.po_amount_received = sum(flt(p.po_total) for p in self.po_items)
-        elif self.customer_po_received and not self.po_items:
-            self.po_amount_received = 0
+        # Process PO Schedule: recalc totals, flag won-list status, sum parent total
+        self._process_po_schedule()
 
         # Validation: bid deadline check
         if self.bid_submission_deadline and self.is_new():
@@ -191,6 +181,64 @@ class PEPLTender(Document):
         elif "Won" in outcomes and "Lost" in outcomes:
             self.status = "Partially Won"
 
+    def _process_po_schedule(self):
+        """Process PO Schedule rows:
+        1. Auto-fetch PL Number and Drawing Number from Item
+        2. Recalculate po_total per row (qty x rate)
+        3. Flag is_in_won_list (1 if item is in Won tender items, 0 otherwise)
+        4. Sum total to po_amount_received on parent
+        """
+        if not self.po_schedule:
+            self.po_amount_received = 0
+            return
+
+        # Build set of Won item codes from tender items
+        won_item_codes = set()
+        if self.items:
+            for tender_item in self.items:
+                if tender_item.outcome == "Won":
+                    won_item_codes.add(tender_item.item)
+
+        # Cache has_column results — avoid repeated DB checks per row
+        has_pl = frappe.db.has_column("Item", "custom_pl_no")
+        has_drawing = frappe.db.has_column("Item", "custom_drawing_no")
+
+        total = 0
+        for schedule_row in self.po_schedule:
+            # Auto-fetch PL/Drawing from Item
+            if schedule_row.item and (has_pl or has_drawing):
+                select_fields = ["name"]
+                if has_pl:
+                    select_fields.append("custom_pl_no")
+                if has_drawing:
+                    select_fields.append("custom_drawing_no")
+
+                fields_str = ", ".join(select_fields)
+                item_data = frappe.db.sql(f"""
+                    SELECT {fields_str}
+                    FROM `tabItem`
+                    WHERE name = %s
+                    LIMIT 1
+                """, schedule_row.item, as_dict=True)
+
+                if item_data:
+                    if has_pl and "custom_pl_no" in item_data[0]:
+                        schedule_row.pl_no = item_data[0].custom_pl_no
+                    if has_drawing and "custom_drawing_no" in item_data[0]:
+                        schedule_row.drawing_no = item_data[0].custom_drawing_no
+
+            # Flag if item is in Won list
+            if schedule_row.item:
+                schedule_row.is_in_won_list = 1 if schedule_row.item in won_item_codes else 0
+
+            # Recalc po_total
+            qty = flt(schedule_row.po_quantity) or 0
+            rate = flt(schedule_row.po_rate) or 0
+            schedule_row.po_total = qty * rate
+            total += schedule_row.po_total
+
+        self.po_amount_received = total
+
 
 @frappe.whitelist()
 def auto_populate_bid_documents(tender_name):
@@ -242,46 +290,6 @@ def auto_populate_bid_documents(tender_name):
 
 
 @frappe.whitelist()
-def sync_po_items_from_won(tender_name):
-    """Auto-populate po_items from Won Tender Items.
-    Each Won item creates a PO Item row with po_qty/po_rate defaulted
-    to bid values. User then edits as needed."""
-
-    tender = frappe.get_doc("PEPL Tender", tender_name)
-
-    won_items = [item for item in tender.items if item.outcome == "Won"]
-
-    if not won_items:
-        frappe.throw(_("No Won items found. Mark items as Won first."))
-
-    # Track existing PO Item rows by linked_tender_item to avoid duplicates
-    existing_links = {p.linked_tender_item: p for p in tender.po_items}
-
-    added = 0
-    for tender_item in won_items:
-        if tender_item.name in existing_links:
-            continue
-
-        tender.append("po_items", {
-            "linked_tender_item": tender_item.name,
-            "item": tender_item.item,
-            "pl_no": tender_item.pl_no,
-            "drawing_no": tender_item.drawing_no,
-            "tendered_quantity": tender_item.quantity,
-            "tendered_rate": tender_item.our_bid_unit_price,
-            "tendered_total": tender_item.our_bid_total_value,
-            "po_quantity": tender_item.quantity,
-            "po_rate": tender_item.our_bid_unit_price,
-            "po_total": tender_item.our_bid_total_value,
-            "delivery_period_days": tender_item.delivery_period_days
-        })
-        added += 1
-
-    tender.save()
-    return {"added": added, "won_count": len(won_items)}
-
-
-@frappe.whitelist()
 def get_tender_summary(filters=None):
     """Returns aggregated tender pipeline summary for dashboards."""
 
@@ -318,17 +326,15 @@ def _custom_field_exists_on_so(field_name):
 
 @frappe.whitelist()
 def create_sales_order_from_tender(tender_name):
-    """Create Sales Order from a Won tender using PO Items quantities and rates.
+    """Create Sales Order from Tender PO Schedule.
+    Each PO Schedule row becomes a separate SO line item with its own delivery date.
 
     Validation gates:
     - Tender must be Won or Partially Won
     - Customer PO must be received
     - PO Number and PO Date required
-    - PO Items must be populated (use Sync from Won Items first)
+    - PO Schedule must have at least one row
     - No existing linked Sales Order (prevents duplicates)
-
-    Uses PO Items (not bid items) — captures actual negotiated order.
-    Returns dict with sales_order name and URL for redirect.
     """
 
     tender = frappe.get_doc("PEPL Tender", tender_name)
@@ -360,18 +366,31 @@ def create_sales_order_from_tender(tender_name):
             )
         )
 
-    if not tender.po_items:
-        frappe.throw(
-            _("No PO Items defined. Click 'Sync from Won Items' button to populate PO Items first.")
-        )
+    if not tender.po_schedule:
+        frappe.throw(_("PO Schedule is empty. Add at least one delivery line."))
 
-    default_delivery = tender.po_delivery_date or add_days(today(), 30)
+    # Validate each schedule row
+    for idx, schedule_row in enumerate(tender.po_schedule, start=1):
+        if not schedule_row.item:
+            frappe.throw(_("Row {0}: Item is required").format(idx))
+        if not schedule_row.po_quantity or schedule_row.po_quantity <= 0:
+            frappe.throw(_("Row {0}: PO Quantity must be greater than 0").format(idx))
+        if not schedule_row.po_rate or schedule_row.po_rate <= 0:
+            frappe.throw(_("Row {0}: PO Rate must be greater than 0").format(idx))
+        if not schedule_row.delivery_date:
+            frappe.throw(_("Row {0}: Delivery Date is required").format(idx))
+
+    # Set SO header delivery_date as earliest from schedule
+    earliest_delivery = min(
+        (s.delivery_date for s in tender.po_schedule if s.delivery_date),
+        default=None
+    )
 
     so = frappe.new_doc("Sales Order")
     so.customer = tender.customer
     so.po_no = tender.po_number
     so.po_date = tender.po_date
-    so.delivery_date = default_delivery
+    so.delivery_date = earliest_delivery or add_days(today(), 30)
     so.transaction_date = today()
 
     if tender.po_payment_terms:
@@ -386,18 +405,13 @@ def create_sales_order_from_tender(tender_name):
     if _custom_field_exists_on_so("custom_sector"):
         so.custom_sector = tender.sector
 
-    # Use PO Items — not Won Tender Items
-    for po_item in tender.po_items:
-        if po_item.delivery_period_days:
-            item_delivery = add_days(tender.po_date or today(), int(po_item.delivery_period_days))
-        else:
-            item_delivery = default_delivery
-
+    # One SO line per PO Schedule row (preserves multiplicity + per-line delivery dates)
+    for schedule_row in tender.po_schedule:
         so.append("items", {
-            "item_code": po_item.item,
-            "qty": po_item.po_quantity,
-            "rate": po_item.po_rate,
-            "delivery_date": item_delivery
+            "item_code": schedule_row.item,
+            "qty": schedule_row.po_quantity,
+            "rate": schedule_row.po_rate,
+            "delivery_date": schedule_row.delivery_date
         })
 
     so.insert(ignore_permissions=True)
@@ -409,6 +423,6 @@ def create_sales_order_from_tender(tender_name):
     return {
         "sales_order": so.name,
         "url": f"/app/sales-order/{so.name}",
-        "items_added": len(tender.po_items),
-        "total_value": sum(flt(p.po_total) for p in tender.po_items)
+        "lines_added": len(tender.po_schedule),
+        "total_value": flt(tender.po_amount_received)
     }

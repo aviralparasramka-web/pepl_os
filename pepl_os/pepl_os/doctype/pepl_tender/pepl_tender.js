@@ -52,56 +52,37 @@ frappe.ui.form.on("PEPL Tender", {
 			}, __("Documents"));
 		}
 
-		// Sync from Won Items button (when PO Received)
-		const can_sync_po_items = !frm.is_new()
-			&& frm.doc.customer_po_received === 1
-			&& (frm.doc.status === "Won" || frm.doc.status === "Partially Won");
+		// RED warning dashboard indicator for PO Schedule items not in Won list
+		if (frm.doc.po_schedule && frm.doc.po_schedule.length > 0) {
+			const invalid_items = frm.doc.po_schedule.filter(s =>
+				s.item && s.is_in_won_list === 0
+			);
 
-		if (can_sync_po_items) {
-			frm.add_custom_button(__("Sync from Won Items"), function() {
-				const won_count = (frm.doc.items || []).filter(i => i.outcome === "Won").length;
-				if (won_count === 0) {
-					frappe.msgprint(__("Mark at least one item as Won first"));
-					return;
-				}
-
-				frappe.confirm(
-					__("Add {0} Won items to PO Items? Existing PO Items will be preserved. New items added with PO Qty/Rate defaulting to bid values.", [won_count]),
-					function() {
-						frappe.call({
-							method: "pepl_os.pepl_os.doctype.pepl_tender.pepl_tender.sync_po_items_from_won",
-							args: { tender_name: frm.doc.name },
-							callback: function(r) {
-								if (r.message) {
-									frappe.show_alert({
-										message: __("Added {0} PO Items from {1} Won items",
-											[r.message.added, r.message.won_count]),
-										indicator: "green"
-									});
-									frm.reload_doc();
-								}
-							}
-						});
-					}
+			if (invalid_items.length > 0) {
+				const item_names = [...new Set(invalid_items.map(s => s.item))].join(", ");
+				frm.dashboard.add_indicator(
+					__("\u26a0 {0} PO Schedule item(s) NOT in Won list: {1}",
+						[invalid_items.length, item_names]),
+					"red"
 				);
-			}, __("PO Items"));
+			}
 		}
 
-		// Create Sales Order button — uses PO Items
+		// Create Sales Order button — uses PO Schedule lines
 		const can_create_so = !frm.is_new()
 			&& (frm.doc.status === "Won" || frm.doc.status === "Partially Won")
 			&& frm.doc.customer_po_received === 1
 			&& frm.doc.po_number
-			&& frm.doc.po_items
-			&& frm.doc.po_items.length > 0
+			&& frm.doc.po_schedule
+			&& frm.doc.po_schedule.length > 0
 			&& !frm.doc.linked_sales_order;
 
 		if (can_create_so) {
 			frm.add_custom_button(__("Create Sales Order"), function() {
-				const items_count = (frm.doc.po_items || []).length;
+				const lines_count = (frm.doc.po_schedule || []).length;
 
 				frappe.confirm(
-					__("Create Sales Order with {0} PO items? You can edit quantity and rate in the Sales Order before submitting.", [items_count]),
+					__("Create Sales Order with {0} delivery lines? Each PO Schedule line becomes a separate SO line item with its own delivery date. You can edit values in the Sales Order before submitting.", [lines_count]),
 					function() {
 						frappe.call({
 							method: "pepl_os.pepl_os.doctype.pepl_tender.pepl_tender.create_sales_order_from_tender",
@@ -111,8 +92,8 @@ frappe.ui.form.on("PEPL Tender", {
 							callback: function(r) {
 								if (r.message) {
 									frappe.show_alert({
-										message: __("Sales Order {0} created with {1} item(s)",
-											[r.message.sales_order, r.message.items_added]),
+										message: __("Sales Order {0} created with {1} delivery line(s)",
+											[r.message.sales_order, r.message.lines_added]),
 										indicator: "green"
 									});
 									setTimeout(() => {
@@ -220,8 +201,25 @@ frappe.ui.form.on("PEPL Tender Item", {
 	}
 });
 
-// PO Items child table — real-time recalc on edit
-frappe.ui.form.on("PEPL Tender PO Item", {
+// PO Schedule child table — real-time recalc + item-in-won-list warning
+frappe.ui.form.on("PEPL Tender PO Schedule", {
+	item(frm, cdt, cdn) {
+		const row = locals[cdt][cdn];
+		if (!row.item) return;
+
+		// Warn if item is not in the Won items list
+		const won_items = (frm.doc.items || [])
+			.filter(i => i.outcome === "Won")
+			.map(i => i.item);
+
+		if (won_items.length > 0 && !won_items.includes(row.item)) {
+			frappe.show_alert({
+				message: __("\u26a0 Warning: Item {0} is NOT in the Won items list of this tender. Please verify.", [row.item]),
+				indicator: "red"
+			}, 6);
+		}
+	},
+
 	po_quantity(frm, cdt, cdn) {
 		const row = locals[cdt][cdn];
 		if (row.po_quantity && row.po_rate) {
