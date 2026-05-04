@@ -48,37 +48,69 @@ class VendorApprovalStatus(Document):
 
 @frappe.whitelist()
 def get_required_documents(sector, stage):
-    """Returns list of required documents for given sector and approval stage.
-    Used by Tender Management to auto-generate document checklist."""
+    """Returns required documents for vendor approval at given stage.
 
-    base_docs = [
-        "Udyam Aadhaar",
+    Returns BOTH baseline (always-required) PEPL bid documents AND
+    stage-specific docs. This ensures Auto-Generate Document Checklist
+    always produces at least minimum standard docs.
+    """
+
+    # BASELINE — these docs are required for ANY tender, regardless of stage
+    baseline_docs = [
         "GST Certificate",
+        "Udyam Registration",
         "PAN Card",
-        "QAP",
-        "Plant and Machinery List",
-        "Instruments and Testing Facilities List"
+        "MSME Certificate",
+        "Bank Details (Cancelled Cheque or Letter)",
+        "Authorisation Letter for Bid Submission",
+        "Bid Securing Declaration (BSD)"
     ]
 
-    if sector == "Railways":
-        if stage == "Unapproved":
-            return base_docs
-        elif stage == "Developmental":
-            return base_docs + [
-                "QAP Approval Letter",
-                "CCA Approval Letter",
-                "Final IC"
-            ]
-        elif stage == "Approved":
-            return ["Approval Certificate"]
+    # STAGE-SPECIFIC docs — added on top of baseline
+    stage_docs_map = {
+        # Railways stages
+        "Unapproved": [
+            "Capability Statement",
+            "Plant and Machinery List",
+            "Quality Control Process Document",
+            "Past Experience / Similar Work Done"
+        ],
+        "Developmental": [
+            "Centralised Vendor Registration Certificate",
+            "Quality Assurance Plan (QAP)",
+            "Inspection Plan",
+            "Material Test Certificates (Sample)",
+            "Technical Capability Document"
+        ],
+        "Approved": [
+            "Quality Assurance Plan (QAP) for this Item",
+            "Manufacturing Process Document",
+            "Lot Inspection History",
+            "Recent CCA / Final IC Records"
+        ],
+        # Defence stages
+        "Source Development": [
+            "Company Profile",
+            "Plant and Machinery List",
+            "Past Defence Experience (if any)",
+            "Quality System Documentation",
+            "ISO 9001 / AS9100 (if available)"
+        ],
+        "Established": [
+            "DGQA / DQA Approval Certificate",
+            "AS9100 Certificate",
+            "Latest Audit Reports",
+            "Source Inspection Plan"
+        ]
+    }
 
-    elif sector == "Defence":
-        if stage == "Source Development":
-            return base_docs
-        elif stage == "Approved / Established":
-            return ["Last I-Note", "60% Tender Completion Evidence"]
+    # Get stage-specific docs
+    stage_specific = stage_docs_map.get(stage, [])
 
-    return []
+    # Combine baseline + stage-specific (deduplicated, order preserved)
+    all_docs = list(dict.fromkeys(baseline_docs + stage_specific))
+
+    return all_docs
 
 
 @frappe.whitelist()
