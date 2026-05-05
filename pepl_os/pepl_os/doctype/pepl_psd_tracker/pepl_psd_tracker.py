@@ -1,14 +1,33 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt
+from frappe.utils import flt, getdate, add_months
 
 
 class PEPLPSDTracker(Document):
     def validate(self):
+        # Auto-fetch sector from SO's customer if not set
         if self.linked_sales_order and not self.sector:
             self._fetch_sector_from_so()
 
+        # Step 1: Server-side recalculation of each PSD Entry
+        # (Child validate doesn't fire on parent save — must do here)
+        if self.psd_entries:
+            for entry in self.psd_entries:
+                # Auto-calculate PSD amount UNLESS manual override is on
+                if not entry.manual_override:
+                    if entry.order_value_basis and entry.psd_percent is not None:
+                        entry.psd_amount = flt(entry.order_value_basis) * flt(entry.psd_percent) / 100
+
+                # Auto-set status to "PSD Not Required" if 0%
+                if flt(entry.psd_percent) == 0 and entry.psd_status == "Pending":
+                    entry.psd_status = "PSD Not Required"
+
+                # Auto-calculate expected refund date if last_supply_date set
+                if entry.last_supply_date and not entry.expected_refund_date:
+                    entry.expected_refund_date = add_months(getdate(entry.last_supply_date), 14)
+
+        # Step 2: Recalculate Tracker summary fields from entries
         if self.psd_entries:
             self.active_entries_count = sum(
                 1 for e in self.psd_entries
@@ -19,6 +38,7 @@ class PEPLPSDTracker(Document):
             self.active_entries_count = 0
             self.total_psd_amount = 0
 
+        # Step 3: Set tracker_id from name
         if not self.tracker_id:
             self.tracker_id = self.name
 

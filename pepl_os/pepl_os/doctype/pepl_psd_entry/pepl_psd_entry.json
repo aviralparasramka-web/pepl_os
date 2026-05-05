@@ -9,6 +9,7 @@
   "psd_status",
   "psd_percent",
   "psd_amount",
+  "manual_override",
   "column_break_1",
   "order_value_basis",
   "last_supply_date",
@@ -56,6 +57,14 @@
    "in_list_view": 1,
    "label": "PSD Amount (INR)",
    "description": "Auto: order_value_basis x psd_percent / 100. Manually editable for override."
+  },
+  {
+   "fieldname": "manual_override",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Manual Override",
+   "default": "0",
+   "description": "Tick to STOP auto-calculation of PSD Amount. Useful when the bank issues a rounded BG amount that differs from the calculated %."
   },
   {
    "fieldname": "column_break_1",
