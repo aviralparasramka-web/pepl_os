@@ -10,7 +10,7 @@ def on_submit(doc, method=None):
     """
     try:
         # 1. Create PSD Tracker
-        from pepl_os.pepl_os.pepl_os.doctype.pepl_psd_tracker.pepl_psd_tracker import (
+        from pepl_os.pepl_os.doctype.pepl_psd_tracker.pepl_psd_tracker import (
             create_psd_for_sales_order,
         )
         psd_result = create_psd_for_sales_order(doc.name)
@@ -31,7 +31,7 @@ def on_submit(doc, method=None):
         if hasattr(doc, "custom_tender_reference") and doc.custom_tender_reference:
             source_tender = doc.custom_tender_reference
 
-        from pepl_os.pepl_os.pepl_os.doctype.pepl_so_document.pepl_so_document import (
+        from pepl_os.pepl_os.doctype.pepl_so_document.pepl_so_document import (
             create_so_documents_for_sales_order,
         )
         doc_result = create_so_documents_for_sales_order(doc.name, source_tender)

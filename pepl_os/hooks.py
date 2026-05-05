@@ -35,7 +35,7 @@ scheduler_events = {}
 
 doc_events = {
     "Sales Order": {
-        "on_submit": "pepl_os.pepl_os.pepl_os.doc_events.sales_order_module5.on_submit"
+        "on_submit": "pepl_os.pepl_os.doc_events.sales_order_module5.on_submit"
     }
 }
 
