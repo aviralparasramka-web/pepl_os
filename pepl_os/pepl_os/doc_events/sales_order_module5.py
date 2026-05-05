@@ -4,48 +4,48 @@ from frappe import _
 
 def on_submit(doc, method=None):
     """Triggered when Sales Order is submitted.
-    Module 5 actions:
-    1. Auto-create PSD Tracker (Defence 5%, others 0%)
-    2. Auto-populate SO Document Library (Customer PO + NDA from Tender if available)
+    Module 5 actions (refactored):
+    1. Auto-create one PSD Tracker per SO (with one default PSD Entry)
+    2. Auto-create one Document Tracker per SO (with default Customer PO entry,
+       plus NDA from Tender if applicable)
     """
     try:
         # 1. Create PSD Tracker
-        from pepl_os.pepl_os.doctype.pepl_psd_tracker.pepl_psd_tracker import (
-            create_psd_for_sales_order,
-        )
-        psd_result = create_psd_for_sales_order(doc.name)
+        from pepl_os.pepl_os.doctype.pepl_psd_tracker.pepl_psd_tracker import create_psd_tracker_for_so
+        psd_result = create_psd_tracker_for_so(doc.name)
 
         if psd_result.get("created"):
             frappe.msgprint(
-                _("PSD Tracker {0} created automatically (Sector: {1}, %: {2})").format(
-                    psd_result.get("psd_name"),
+                _("PSD Tracker {0} created (Sector: {1}, Initial PSD: {2}%)").format(
+                    psd_result.get("tracker_name"),
                     psd_result.get("sector"),
-                    psd_result.get("percentage"),
+                    psd_result.get("percentage")
                 ),
                 indicator="green",
-                alert=True,
+                alert=True
             )
 
-        # 2. Auto-populate SO Document Library
+        # 2. Detect source tender for NDA copy
         source_tender = None
         if hasattr(doc, "custom_tender_reference") and doc.custom_tender_reference:
             source_tender = doc.custom_tender_reference
 
-        from pepl_os.pepl_os.doctype.pepl_so_document.pepl_so_document import (
-            create_so_documents_for_sales_order,
-        )
-        doc_result = create_so_documents_for_sales_order(doc.name, source_tender)
+        # 3. Create Document Tracker
+        from pepl_os.pepl_os.doctype.pepl_document_tracker.pepl_document_tracker import create_doc_tracker_for_so
+        doc_result = create_doc_tracker_for_so(doc.name, source_tender)
 
-        if doc_result.get("count", 0) > 0:
+        if doc_result.get("created"):
             frappe.msgprint(
-                _("Auto-populated {0} SO Document record(s)").format(doc_result.get("count")),
+                _("Document Tracker {0} created with {1} initial entries").format(
+                    doc_result.get("tracker_name"),
+                    doc_result.get("entries_count")
+                ),
                 indicator="blue",
-                alert=True,
+                alert=True
             )
 
     except Exception as e:
-        # Log but do NOT block SO submit
         frappe.log_error(
             f"Module 5 auto-creation failed for SO {doc.name}: {str(e)}",
-            "Module 5 SO On Submit",
+            "Module 5 SO On Submit"
         )

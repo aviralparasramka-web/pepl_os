@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "PSD-TRK-.YYYY.-.####",
+ "autoname": "DOC-TRK-.YYYY.-.####",
  "creation": "2026-05-05 18:00:00",
  "doctype": "DocType",
  "editable_grid": 0,
@@ -9,14 +9,12 @@
   "section_basic",
   "linked_sales_order",
   "customer",
-  "sector",
   "column_break_1",
   "tracker_id",
-  "active_entries_count",
-  "total_psd_amount",
+  "total_documents",
   "section_entries",
-  "psd_entries_html",
-  "psd_entries",
+  "doc_entries_html",
+  "document_entries",
   "section_remarks",
   "tracker_remarks"
  ],
@@ -24,7 +22,7 @@
   {
    "fieldname": "section_basic",
    "fieldtype": "Section Break",
-   "label": "PSD Tracker"
+   "label": "Document Tracker"
   },
   {
    "fieldname": "linked_sales_order",
@@ -44,13 +42,6 @@
    "in_list_view": 1
   },
   {
-   "fieldname": "sector",
-   "fieldtype": "Select",
-   "label": "Sector",
-   "options": "\nRailways\nDefence\nPrivate\nOthers",
-   "in_list_view": 1
-  },
-  {
    "fieldname": "column_break_1",
    "fieldtype": "Column Break"
   },
@@ -61,32 +52,27 @@
    "read_only": 1
   },
   {
-   "fieldname": "active_entries_count",
+   "fieldname": "total_documents",
    "fieldtype": "Int",
-   "label": "Active PSD Entries",
-   "read_only": 1
-  },
-  {
-   "fieldname": "total_psd_amount",
-   "fieldtype": "Currency",
-   "label": "Total PSD Locked (INR)",
-   "read_only": 1
+   "label": "Total Documents",
+   "read_only": 1,
+   "in_list_view": 1
   },
   {
    "fieldname": "section_entries",
    "fieldtype": "Section Break",
-   "label": "PSD Entries"
+   "label": "Document Entries"
   },
   {
-   "fieldname": "psd_entries_html",
+   "fieldname": "doc_entries_html",
    "fieldtype": "HTML",
-   "options": "<p style='color:#666; font-size:12px;'>Add PSD entries below. Each entry can be a separate PSD (e.g., Initial PSD, Supplementary PSD for amendment). Each entry can have multiple instrument submissions (BG renewal trail).</p>"
+   "options": "<p style='color:#666; font-size:12px;'>Add documents below. Each entry has a primary attachment + can hold multiple supplementary files (open the entry to add). Click into any row to expand for full details.</p>"
   },
   {
-   "fieldname": "psd_entries",
+   "fieldname": "document_entries",
    "fieldtype": "Table",
-   "label": "PSD Entries",
-   "options": "PEPL PSD Entry"
+   "label": "Document Entries",
+   "options": "PEPL Document Entry"
   },
   {
    "fieldname": "section_remarks",
@@ -106,15 +92,15 @@
  "modified": "2026-05-05 18:00:00",
  "modified_by": "Administrator",
  "module": "PEPL OS",
- "name": "PEPL PSD Tracker",
+ "name": "PEPL Document Tracker",
  "owner": "Administrator",
  "permissions": [
   {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "System Manager", "share": 1, "write": 1},
   {"create": 1, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Sales User", "share": 1, "write": 1},
   {"create": 1, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Accounts User", "share": 1, "write": 1},
-  {"create": 0, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Engineering User", "share": 1, "write": 0},
-  {"create": 0, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Purchase User", "share": 1, "write": 0},
-  {"create": 0, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Stock User", "share": 1, "write": 0}
+  {"create": 1, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Engineering User", "share": 1, "write": 1},
+  {"create": 1, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Purchase User", "share": 1, "write": 1},
+  {"create": 1, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Stock User", "share": 1, "write": 1}
  ],
  "search_fields": "linked_sales_order,customer,tracker_id",
  "sort_field": "creation",

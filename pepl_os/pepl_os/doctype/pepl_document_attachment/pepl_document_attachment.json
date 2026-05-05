@@ -1,6 +1,6 @@
 {
  "actions": [],
- "creation": "2026-05-04 17:00:00",
+ "creation": "2026-05-05 18:00:00",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -8,7 +8,6 @@
   "file_label",
   "attached_file",
   "uploaded_date",
-  "uploaded_by",
   "version_number"
  ],
  "fields": [
@@ -16,9 +15,8 @@
    "fieldname": "file_label",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "File Label / Description",
-   "reqd": 1,
-   "description": "e.g., 'PSD Cover Letter', 'BG Document', 'Customer Acknowledgement'"
+   "label": "File Label",
+   "reqd": 1
   },
   {
    "fieldname": "attached_file",
@@ -30,31 +28,23 @@
   {
    "fieldname": "uploaded_date",
    "fieldtype": "Date",
-   "label": "Uploaded Date",
+   "label": "Uploaded",
    "default": "Today",
    "in_list_view": 1
   },
   {
-   "fieldname": "uploaded_by",
-   "fieldtype": "Link",
-   "label": "Uploaded By",
-   "options": "User",
-   "read_only": 1
-  },
-  {
    "fieldname": "version_number",
    "fieldtype": "Data",
-   "label": "Version",
-   "description": "Optional version reference (e.g., Rev A, V1.2)"
+   "label": "Version"
   }
  ],
  "index_web_pages_for_search": 0,
  "istable": 1,
  "links": [],
- "modified": "2026-05-04 17:00:00",
+ "modified": "2026-05-05 18:00:00",
  "modified_by": "Administrator",
  "module": "PEPL OS",
- "name": "PEPL SO Document Attachment",
+ "name": "PEPL Document Attachment",
  "owner": "Administrator",
  "permissions": [],
  "sort_field": "creation",

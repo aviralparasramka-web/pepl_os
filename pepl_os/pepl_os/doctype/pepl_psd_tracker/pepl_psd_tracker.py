@@ -1,7 +1,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt, getdate, add_months
+from frappe.utils import flt
 
 
 class PEPLPSDTracker(Document):
@@ -9,23 +9,20 @@ class PEPLPSDTracker(Document):
         if self.linked_sales_order and not self.sector:
             self._fetch_sector_from_so()
 
-        if self.order_value and self.psd_percentage is not None:
-            calculated_amount = flt(self.order_value) * flt(self.psd_percentage) / 100
-            if not self.psd_amount or flt(self.psd_amount) == 0:
-                self.psd_amount = calculated_amount
+        if self.psd_entries:
+            self.active_entries_count = sum(
+                1 for e in self.psd_entries
+                if e.psd_status not in ["Closed", "PSD Not Required"]
+            )
+            self.total_psd_amount = sum(flt(e.psd_amount) for e in self.psd_entries)
+        else:
+            self.active_entries_count = 0
+            self.total_psd_amount = 0
 
-        if flt(self.psd_percentage) == 0 and self.psd_status == "Pending":
-            self.psd_status = "PSD Not Required"
-
-        if self.last_supply_date and not self.expected_refund_date:
-            self.expected_refund_date = add_months(getdate(self.last_supply_date), 14)
-
-        if self.last_supply_date and not self.supply_completed:
-            self.supply_completed = 1
+        if not self.tracker_id:
+            self.tracker_id = self.name
 
     def _fetch_sector_from_so(self):
-        if not self.linked_sales_order:
-            return
         customer = frappe.db.get_value("Sales Order", self.linked_sales_order, "customer")
         if not customer:
             return
@@ -43,13 +40,13 @@ class PEPLPSDTracker(Document):
 
 
 @frappe.whitelist()
-def create_psd_for_sales_order(sales_order_name):
-    """Auto-create PSD Tracker for a Sales Order.
-    Called from SO on_submit hook.
+def create_psd_tracker_for_so(sales_order_name):
+    """Create one PSD Tracker per Sales Order with one default PSD Entry.
+    Idempotent — returns existing tracker if already created.
     """
     existing = frappe.db.exists("PEPL PSD Tracker", {"linked_sales_order": sales_order_name})
     if existing:
-        return {"created": False, "existing": existing}
+        return {"created": False, "tracker_name": existing}
 
     so = frappe.get_doc("Sales Order", sales_order_name)
 
@@ -65,21 +62,28 @@ def create_psd_for_sales_order(sales_order_name):
                 sector = "Private"
 
     default_percent = 5 if sector == "Defence" else 0
+    initial_amount = flt(so.grand_total) * default_percent / 100
+    initial_status = "Pending" if default_percent > 0 else "PSD Not Required"
 
-    psd = frappe.new_doc("PEPL PSD Tracker")
-    psd.linked_sales_order = so.name
-    psd.customer = so.customer
-    psd.sector = sector
-    psd.order_value = so.grand_total
-    psd.psd_percentage = default_percent
-    psd.psd_amount = flt(so.grand_total) * default_percent / 100
-    psd.psd_status = "Pending" if default_percent > 0 else "PSD Not Required"
-    psd.insert(ignore_permissions=True)
+    tracker = frappe.new_doc("PEPL PSD Tracker")
+    tracker.linked_sales_order = so.name
+    tracker.customer = so.customer
+    tracker.sector = sector
+
+    tracker.append("psd_entries", {
+        "entry_label": "Initial PSD",
+        "psd_status": initial_status,
+        "psd_percent": default_percent,
+        "psd_amount": initial_amount,
+        "order_value_basis": so.grand_total
+    })
+
+    tracker.insert(ignore_permissions=True)
 
     return {
         "created": True,
-        "psd_name": psd.name,
+        "tracker_name": tracker.name,
         "sector": sector,
         "percentage": default_percent,
-        "amount": psd.psd_amount
+        "initial_amount": initial_amount
     }
