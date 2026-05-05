@@ -1,0 +1,247 @@
+{
+ "actions": [],
+ "autoname": "PSD-.YYYY.-.####",
+ "creation": "2026-05-04 17:00:00",
+ "doctype": "DocType",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_basic",
+  "linked_sales_order",
+  "customer",
+  "sector",
+  "column_break_basic",
+  "naming_series",
+  "psd_status",
+  "section_psd_calc",
+  "order_value",
+  "psd_percentage",
+  "column_break_calc",
+  "psd_amount",
+  "expected_refund_date",
+  "section_supply",
+  "last_supply_date",
+  "supply_completed",
+  "section_submissions",
+  "submissions_html",
+  "submissions",
+  "section_ndc",
+  "ndc_requested_date",
+  "ndc_received_date",
+  "ndc_file",
+  "column_break_ndc",
+  "psd_refund_date",
+  "psd_refund_amount",
+  "letter_to_bank_date",
+  "section_remarks",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_basic",
+   "fieldtype": "Section Break",
+   "label": "PSD Tracker"
+  },
+  {
+   "fieldname": "linked_sales_order",
+   "fieldtype": "Link",
+   "label": "Linked Sales Order",
+   "options": "Sales Order",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "fetch_from": "linked_sales_order.customer",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "sector",
+   "fieldtype": "Select",
+   "label": "Sector",
+   "options": "\nRailways\nDefence\nPrivate\nOthers",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_basic",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Data",
+   "label": "PSD Number",
+   "read_only": 1,
+   "description": "Auto-generated as PSD-YYYY-####"
+  },
+  {
+   "fieldname": "psd_status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pending\nRequested to Bank\nReceived from Bank / Dispatched to Customer\nActive\nNDC Submission\nPSD Refunded\nLetter to Bank for Closure\nClosed\nPSD Not Required",
+   "default": "Pending",
+   "in_list_view": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_psd_calc",
+   "fieldtype": "Section Break",
+   "label": "PSD Calculation"
+  },
+  {
+   "fieldname": "order_value",
+   "fieldtype": "Currency",
+   "label": "Order Value (INR)",
+   "read_only": 0,
+   "fetch_from": "linked_sales_order.grand_total",
+   "description": "Auto-fetched from SO, editable for adjustments"
+  },
+  {
+   "fieldname": "psd_percentage",
+   "fieldtype": "Percent",
+   "label": "PSD %",
+   "default": 0,
+   "description": "Defence default = 5%, others = 0%. Editable per record."
+  },
+  {
+   "fieldname": "column_break_calc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "psd_amount",
+   "fieldtype": "Currency",
+   "label": "PSD Amount (INR)",
+   "description": "Auto: order_value x psd_percentage / 100. Editable for manual override."
+  },
+  {
+   "fieldname": "expected_refund_date",
+   "fieldtype": "Date",
+   "label": "Expected Refund Date",
+   "description": "Auto: last_supply_date + 14 months. Configurable per record."
+  },
+  {
+   "fieldname": "section_supply",
+   "fieldtype": "Section Break",
+   "label": "Supply Tracking"
+  },
+  {
+   "fieldname": "last_supply_date",
+   "fieldtype": "Date",
+   "label": "Last Supply Date",
+   "description": "Date when final supply against this SO was completed. Used to calculate Expected Refund Date."
+  },
+  {
+   "fieldname": "supply_completed",
+   "fieldtype": "Check",
+   "label": "Supply Completed",
+   "default": "0"
+  },
+  {
+   "fieldname": "section_submissions",
+   "fieldtype": "Section Break",
+   "label": "PSD Submissions (BG / DD / FDR)"
+  },
+  {
+   "fieldname": "submissions_html",
+   "fieldtype": "HTML",
+   "options": "<p style='color: #666; font-size: 12px;'>Add submission instruments below. Mark old ones as inactive when renewed. Most recent active instrument is what's currently held by customer.</p>"
+  },
+  {
+   "fieldname": "submissions",
+   "fieldtype": "Table",
+   "label": "Submissions",
+   "options": "PEPL PSD Submission"
+  },
+  {
+   "fieldname": "section_ndc",
+   "fieldtype": "Section Break",
+   "label": "NDC & Refund Tracking"
+  },
+  {
+   "fieldname": "ndc_requested_date",
+   "fieldtype": "Date",
+   "label": "NDC Requested Date"
+  },
+  {
+   "fieldname": "ndc_received_date",
+   "fieldtype": "Date",
+   "label": "NDC Received Date"
+  },
+  {
+   "fieldname": "ndc_file",
+   "fieldtype": "Attach",
+   "label": "NDC Document"
+  },
+  {
+   "fieldname": "column_break_ndc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "psd_refund_date",
+   "fieldtype": "Date",
+   "label": "PSD Refund Received Date"
+  },
+  {
+   "fieldname": "psd_refund_amount",
+   "fieldtype": "Currency",
+   "label": "PSD Refund Amount (INR)"
+  },
+  {
+   "fieldname": "letter_to_bank_date",
+   "fieldtype": "Date",
+   "label": "Letter to Bank for Closure Date"
+  },
+  {
+   "fieldname": "section_remarks",
+   "fieldtype": "Section Break",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Text",
+   "label": "Remarks"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 0,
+ "links": [],
+ "modified": "2026-05-04 17:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "PEPL PSD Tracker",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1,
+   "report": 1, "role": "System Manager", "share": 1, "write": 1
+  },
+  {
+   "create": 1, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1,
+   "report": 1, "role": "Sales User", "share": 1, "write": 1
+  },
+  {
+   "create": 1, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1,
+   "report": 1, "role": "Accounts User", "share": 1, "write": 1
+  },
+  {
+   "create": 0, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1,
+   "report": 1, "role": "Engineering User", "share": 1, "write": 0
+  },
+  {
+   "create": 0, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1,
+   "report": 1, "role": "Purchase User", "share": 1, "write": 0
+  },
+  {
+   "create": 0, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1,
+   "report": 1, "role": "Stock User", "share": 1, "write": 0
+  }
+ ],
+ "search_fields": "linked_sales_order,customer,naming_series,psd_status",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "naming_series",
+ "track_changes": 1
+}
