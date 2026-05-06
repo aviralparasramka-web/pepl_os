@@ -57,7 +57,9 @@
   "column_break_deductions",
   "other_deductions",
   "other_deduction_reason",
-  "net_payment_received",
+  "gross_payment_realised",
+  "total_recoverable_held",
+  "total_written_off",
   "section_summary",
   "total_amount_received",
   "total_outstanding",
@@ -353,11 +355,25 @@
    "label": "Other Deduction Reason"
   },
   {
-   "fieldname": "net_payment_received",
+   "fieldname": "gross_payment_realised",
    "fieldtype": "Currency",
-   "label": "Net Payment Received (INR)",
+   "label": "Gross Payment Realised",
    "read_only": 1,
-   "description": "Auto: Total Received - All Deductions"
+   "description": "Bank credit + all deductions. This is the invoice value realised and what closes against the invoice."
+  },
+  {
+   "fieldname": "total_recoverable_held",
+   "fieldtype": "Currency",
+   "label": "Recoverable Held (TDS + SD)",
+   "read_only": 1,
+   "description": "Money held by customer or government, recoverable later via Form 26AS or NDC."
+  },
+  {
+   "fieldname": "total_written_off",
+   "fieldtype": "Currency",
+   "label": "Written Off (LD + Other)",
+   "read_only": 1,
+   "description": "Real loss. Not recoverable."
   },
   {
    "fieldname": "section_summary",

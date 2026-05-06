@@ -25,7 +25,8 @@
    "fieldname": "amount_received",
    "fieldtype": "Currency",
    "in_list_view": 1,
-   "label": "Amount Received (INR)",
+   "label": "Bank Credit Received",
+   "description": "Net amount actually credited to bank account after deductions by customer. This is what appears in the bank statement.",
    "reqd": 1
   },
   {

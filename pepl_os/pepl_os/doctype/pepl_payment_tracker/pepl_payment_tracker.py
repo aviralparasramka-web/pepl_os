@@ -15,33 +15,12 @@ class PEPLPaymentTracker(Document):
         if self.linked_sales_invoice and not self.linked_sales_order:
             self._fetch_so_from_invoice()
 
-        # Calculate Total Amount Received from receipts
-        if self.payment_receipts:
-            self.total_amount_received = sum(
-                flt(r.amount_received) for r in self.payment_receipts
-            )
-        else:
-            self.total_amount_received = 0
+        self.calculate_payment_summary()
 
-        # Calculate Total Deductions
-        total_deductions = (
-            flt(self.tds_deducted) + flt(self.sd_deducted)
-            + flt(self.ld_deducted) + flt(self.other_deductions)
-        )
-
-        # Net Payment Received = Total Received - Deductions
-        self.net_payment_received = flt(self.total_amount_received) - total_deductions
-
-        # Net Amount Receivable = Invoice Amount - Deductions
-        self.net_amount_receivable = flt(self.invoice_amount) - total_deductions
-
-        # Total Outstanding = Invoice Amount - Total Received
-        self.total_outstanding = flt(self.invoice_amount) - flt(self.total_amount_received)
-
-        # Amount Reconciled = min(Net Receivable, Net Received)
+        # Amount Reconciled = min(Net Receivable, Gross Payment Realised)
         self.amount_reconciled = min(
             flt(self.net_amount_receivable),
-            flt(self.net_payment_received)
+            flt(self.gross_payment_realised)
         )
 
         # Days Outstanding + Ageing Bucket (MSME 45-day rule)
@@ -57,6 +36,33 @@ class PEPLPaymentTracker(Document):
 
         self.last_update_date = today()
         self._auto_advance_status()
+
+    def calculate_payment_summary(self):
+        """
+        Module 8 patch (May 2026):
+        amount_received in each receipt = bank credit value (net what hits bank).
+        gross_payment_realised = bank credit + all deductions (closes against invoice).
+        """
+        total_bank_credit = 0
+        for receipt in (self.payment_receipts or []):
+            total_bank_credit += (receipt.amount_received or 0)
+
+        tds = self.tds_deducted or 0
+        sd = self.sd_deducted or 0
+        ld = self.ld_deducted or 0
+        other = self.other_deductions or 0
+
+        self.total_amount_received = total_bank_credit
+        self.gross_payment_realised = total_bank_credit + tds + sd + ld + other
+        self.total_recoverable_held = tds + sd
+        self.total_written_off = ld + other
+        self.total_outstanding = (self.invoice_amount or 0) - self.gross_payment_realised
+
+        # net_amount_receivable defaults to invoice_amount.
+        # User can manually override for disputed/agreed reductions.
+        # If they set a non-zero value, we respect it.
+        if not self.net_amount_receivable:
+            self.net_amount_receivable = self.invoice_amount or 0
 
     def _fetch_sector_from_invoice(self):
         customer = frappe.db.get_value(
@@ -91,8 +97,8 @@ class PEPLPaymentTracker(Document):
         if self.payment_status in ["Closed", "Reconciled"]:
             return
 
-        # Fully paid
-        if (flt(self.total_amount_received) >= flt(self.net_amount_receivable)
+        # Fully realised against invoice (gross = bank + deductions)
+        if (flt(self.gross_payment_realised) >= flt(self.net_amount_receivable)
                 and flt(self.net_amount_receivable) > 0):
             self.payment_status = "Reconciled"
             return
