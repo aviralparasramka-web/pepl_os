@@ -1,0 +1,293 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "SUP-APR-.YYYY.-.####",
+ "creation": "2026-05-06 18:00:00",
+ "doctype": "DocType",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "vendor_info_section",
+  "linked_supplier",
+  "supplier_name",
+  "column_break_vendor",
+  "vendor_type",
+  "approval_section",
+  "approval_status",
+  "approved_with_pending_docs",
+  "pending_docs_reason",
+  "pending_docs_committed_date",
+  "pending_docs_list",
+  "column_break_approval",
+  "approval_date",
+  "approved_by",
+  "suspension_section",
+  "suspension_reason",
+  "suspension_date",
+  "mandatory_section",
+  "mandatory_help",
+  "mandatory_documents",
+  "optional_section",
+  "optional_help",
+  "optional_documents",
+  "other_section",
+  "other_documents",
+  "override_section",
+  "override_log",
+  "remarks_section",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "vendor_info_section",
+   "fieldtype": "Section Break",
+   "label": "Vendor Information"
+  },
+  {
+   "fieldname": "linked_supplier",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Supplier",
+   "options": "Supplier",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fetch_from": "linked_supplier.supplier_name",
+   "fieldname": "supplier_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Supplier Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_vendor",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "vendor_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Vendor Type",
+   "options": "\nRaw Material\nHeat Treatment\nPlating\nJob-Worker\nTooling\nServices\nOther"
+  },
+  {
+   "fieldname": "approval_section",
+   "fieldtype": "Section Break",
+   "label": "Approval Status"
+  },
+  {
+   "fieldname": "approval_status",
+   "fieldtype": "Select",
+   "default": "Pending",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Approval Status",
+   "options": "Pending\nApproved (Documents Pending)\nApproved\nExpired\nTemporary Suspended\nPermanent Suspended",
+   "reqd": 1
+  },
+  {
+   "description": "Tick to approve vendor before all mandatory docs are received. Pending docs will be tracked weekly by the Notification Centre.",
+   "fieldname": "approved_with_pending_docs",
+   "fieldtype": "Check",
+   "label": "Approved with Pending Documents"
+  },
+  {
+   "depends_on": "eval:doc.approved_with_pending_docs",
+   "fieldname": "pending_docs_reason",
+   "fieldtype": "Small Text",
+   "label": "Pending Docs Reason",
+   "mandatory_depends_on": "eval:doc.approved_with_pending_docs"
+  },
+  {
+   "depends_on": "eval:doc.approved_with_pending_docs",
+   "fieldname": "pending_docs_committed_date",
+   "fieldtype": "Date",
+   "label": "Vendor Committed Date"
+  },
+  {
+   "description": "Auto-computed list of mandatory docs not yet attached",
+   "fieldname": "pending_docs_list",
+   "fieldtype": "Small Text",
+   "label": "Pending Documents (Auto)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_approval",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "approval_date",
+   "fieldtype": "Date",
+   "label": "Approval Date"
+  },
+  {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved By",
+   "options": "User"
+  },
+  {
+   "depends_on": "eval:in_list(['Temporary Suspended','Permanent Suspended'], doc.approval_status)",
+   "fieldname": "suspension_section",
+   "fieldtype": "Section Break",
+   "label": "Suspension"
+  },
+  {
+   "fieldname": "suspension_reason",
+   "fieldtype": "Small Text",
+   "label": "Suspension Reason",
+   "mandatory_depends_on": "eval:in_list(['Temporary Suspended','Permanent Suspended'], doc.approval_status)"
+  },
+  {
+   "fieldname": "suspension_date",
+   "fieldtype": "Date",
+   "label": "Suspension Date"
+  },
+  {
+   "fieldname": "mandatory_section",
+   "fieldtype": "Section Break",
+   "label": "Mandatory Documents (11)"
+  },
+  {
+   "fieldname": "mandatory_help",
+   "fieldtype": "HTML",
+   "options": "<p><b>11 mandatory documents required for full approval.</b> If any are missing, tick 'Approved with Pending Documents' above and they will be tracked weekly.</p>"
+  },
+  {
+   "fieldname": "mandatory_documents",
+   "fieldtype": "Table",
+   "label": "Mandatory Documents",
+   "options": "PEPL Supplier Document"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "optional_section",
+   "fieldtype": "Section Break",
+   "label": "Optional Documents"
+  },
+  {
+   "fieldname": "optional_help",
+   "fieldtype": "HTML",
+   "options": "<p>Optional documents \u2014 provide where applicable based on vendor type.</p>"
+  },
+  {
+   "fieldname": "optional_documents",
+   "fieldtype": "Table",
+   "label": "Optional Documents",
+   "options": "PEPL Supplier Document"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "other_section",
+   "fieldtype": "Section Break",
+   "label": "Other Documents (IT Act, Declarations)"
+  },
+  {
+   "fieldname": "other_documents",
+   "fieldtype": "Table",
+   "label": "Other Documents",
+   "options": "PEPL Supplier Other Document"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "override_section",
+   "fieldtype": "Section Break",
+   "label": "RFQ Override Log"
+  },
+  {
+   "fieldname": "override_log",
+   "fieldtype": "Table",
+   "label": "Override Log",
+   "options": "PEPL Supplier Override Log",
+   "read_only": 1
+  },
+  {
+   "fieldname": "remarks_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 0,
+ "links": [],
+ "modified": "2026-05-06 18:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "PEPL Supplier Approval",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 0,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 0,
+   "export": 0,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User",
+   "share": 1,
+   "write": 0
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 0,
+   "export": 0,
+   "print": 0,
+   "read": 1,
+   "report": 0,
+   "role": "Stock User",
+   "share": 0,
+   "write": 0
+  }
+ ],
+ "search_fields": "linked_supplier,supplier_name,approval_status,vendor_type",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "supplier_name",
+ "track_changes": 1
+}
