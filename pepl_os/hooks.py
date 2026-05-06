@@ -31,7 +31,11 @@ fixtures = [
     "PEPL RM Group"
 ]
 
-scheduler_events = {}
+scheduler_events = {
+    "daily": [
+        "pepl_os.pepl_os.doctype.pepl_supplier_approval.pepl_supplier_approval.update_all_supplier_approvals_daily",
+    ],
+}
 
 doc_events = {
     "Sales Order": {
@@ -39,7 +43,19 @@ doc_events = {
     },
     "Sales Invoice": {
         "on_submit": "pepl_os.pepl_os.doc_events.sales_invoice_module8.on_submit"
-    }
+    },
+    "Supplier": {
+        "after_insert": "pepl_os.pepl_os.doc_events.supplier_lifecycle.on_supplier_insert"
+    },
+    "Purchase Order": {
+        "before_submit": "pepl_os.pepl_os.doc_events.purchase_validation.block_po_if_suspended"
+    },
+    "Purchase Receipt": {
+        "before_submit": "pepl_os.pepl_os.doc_events.purchase_validation.block_pr_if_perm_suspended"
+    },
+    "Purchase Invoice": {
+        "before_submit": "pepl_os.pepl_os.doc_events.purchase_validation.block_pi_if_perm_suspended"
+    },
 }
 
 doctype_js = {}
