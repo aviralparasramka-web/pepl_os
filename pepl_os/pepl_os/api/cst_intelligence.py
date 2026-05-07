@@ -417,6 +417,23 @@ def send_rfq_email_to_suppliers(
     return {"results": results}
 
 
+def _cst_has_priced_component_lines(cst):
+    """True if at least one component row has any costing amount."""
+    for row in cst.components or []:
+        if flt(row.component_subtotal) > 0:
+            return True
+        chunk = (
+            flt(row.raw_material_cost)
+            + flt(row.machining_cost)
+            + flt(row.surface_treatment_cost)
+            + flt(row.bought_out_cost)
+            + flt(row.component_other_charges)
+        )
+        if chunk > 0:
+            return True
+    return False
+
+
 @frappe.whitelist()
 def create_quotation_from_cst(cst_name):
     """Draft Quotation from CST linked customer and item."""
@@ -424,10 +441,24 @@ def create_quotation_from_cst(cst_name):
         frappe.throw(_("CST name required"))
 
     cst = frappe.get_doc("PEPL CST Cost Sheet", cst_name)
-    if not cst.customer:
-        frappe.throw(_("Set Customer on the CST first"))
+
+    if not cst.linked_product:
+        frappe.throw(_("Set Linked Product on the CST first"))
     if not cst.linked_item:
         frappe.throw(_("CST has no linked item"))
+
+    customer = cst.get("customer") or frappe.db.get_value(
+        "PEPL Product Master", cst.linked_product, "primary_customer"
+    )
+    if not customer:
+        frappe.throw(
+            _("No customer on this Cost Sheet or its Linked Product (Primary Customer).")
+        )
+
+    if not _cst_has_priced_component_lines(cst):
+        frappe.throw(
+            _("Add at least one component line with cost before creating a quotation.")
+        )
 
     rate = flt(cst.final_bid_price) or flt(cst.suggested_unit_price)
     if not rate:
@@ -439,7 +470,7 @@ def create_quotation_from_cst(cst_name):
 
     qtn = frappe.new_doc("Quotation")
     qtn.quotation_to = "Customer"
-    qtn.party_name = cst.customer
+    qtn.party_name = customer
     qtn.company = company
     qtn.transaction_date = today()
     qtn.valid_till = add_months(getdate(today()), 1)
