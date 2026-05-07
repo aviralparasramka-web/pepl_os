@@ -73,45 +73,25 @@ function pepl_cst_has_component_with_cost(doc) {
 	return rows.some((r) => pepl_cst_component_row_has_cost(r));
 }
 
-function pepl_create_quotation_from_cst(frm) {
-	if (frm.is_new()) {
-		frappe.msgprint({
-			title: __('Quotation'),
-			message: __('Save the Cost Sheet first.'),
-			indicator: 'orange',
-		});
-		return;
+function pepl_quantity_per_assembly_from_row(frm, cdt, cdn) {
+	const row = locals[cdt][cdn];
+	let q = row && row.quantity_per_assembly;
+	const grid = frm.fields_dict.components && frm.fields_dict.components.grid;
+	const gr = grid && grid.grid_rows_by_docname && grid.grid_rows_by_docname[cdn];
+	if (gr && gr.doc && gr.doc.quantity_per_assembly != null && gr.doc.quantity_per_assembly !== '') {
+		q = gr.doc.quantity_per_assembly;
 	}
-	if (!frm.doc.linked_product) {
-		frappe.msgprint({
-			title: __('Quotation'),
-			message: __('Set Linked Product first.'),
-			indicator: 'red',
-		});
-		return;
-	}
-	if (!frm.doc.linked_item) {
-		frappe.msgprint({
-			title: __('Quotation'),
-			message: __('Linked Item is missing. Set Linked Product so Item is fetched.'),
-			indicator: 'red',
-		});
-		return;
-	}
-	if (!pepl_cst_has_component_with_cost(frm.doc)) {
-		frappe.msgprint({
-			title: __('Quotation'),
-			message: __(
-				'Add at least one component line with cost (subtotal or cost fields) before creating a quotation.'
-			),
-			indicator: 'orange',
-		});
-		return;
-	}
+	const n = flt(q);
+	return n > 0 ? n : 1;
+}
 
+function pepl_call_create_quotation_from_cst(frm, override_customer) {
 	frappe.call({
 		method: 'pepl_os.pepl_os.api.cst_intelligence.create_quotation_from_cst',
-		args: { cst_name: frm.doc.name },
+		args: {
+			cst_name: frm.doc.name,
+			override_customer: override_customer || null,
+		},
 		freeze: true,
 		callback(r) {
 			if (r.exc) {
@@ -173,6 +153,95 @@ function pepl_create_quotation_from_cst(frm) {
 				__('Could not create quotation. Check messages and try again.');
 			frappe.msgprint({ title: __('Quotation'), message: msg, indicator: 'red' });
 		},
+	});
+}
+
+function pepl_prompt_customer_for_quotation(frm, proceed) {
+	const d = new frappe.ui.Dialog({
+		title: __('Customer required'),
+		fields: [
+			{
+				fieldtype: 'HTML',
+				fieldname: 'hint',
+				options:
+					'<p class="text-muted small">' +
+					__(
+						'This Cost Sheet has no Customer and Linked Product has no Primary Customer. Pick a Customer for the quotation.'
+					) +
+					'</p>',
+			},
+			{
+				fieldname: 'customer',
+				label: __('Customer'),
+				fieldtype: 'Link',
+				options: 'Customer',
+				reqd: 1,
+			},
+		],
+		primary_action_label: __('Create quotation'),
+		primary_action(values) {
+			const c = values.customer;
+			if (!c) {
+				frappe.msgprint({ title: __('Customer'), message: __('Select a customer.'), indicator: 'orange' });
+				return;
+			}
+			d.hide();
+			proceed(c);
+		},
+	});
+	d.show();
+}
+
+function pepl_create_quotation_from_cst(frm) {
+	if (frm.is_new()) {
+		frappe.msgprint({
+			title: __('Quotation'),
+			message: __('Save the Cost Sheet first.'),
+			indicator: 'orange',
+		});
+		return;
+	}
+	if (!frm.doc.linked_product) {
+		frappe.msgprint({
+			title: __('Quotation'),
+			message: __('Set Linked Product first.'),
+			indicator: 'red',
+		});
+		return;
+	}
+	if (!frm.doc.linked_item) {
+		frappe.msgprint({
+			title: __('Quotation'),
+			message: __('Linked Item is missing. Set Linked Product so Item is fetched.'),
+			indicator: 'red',
+		});
+		return;
+	}
+	if (!pepl_cst_has_component_with_cost(frm.doc)) {
+		frappe.msgprint({
+			title: __('Quotation'),
+			message: __(
+				'Add at least one component line with cost (subtotal or cost fields) before creating a quotation.'
+			),
+			indicator: 'orange',
+		});
+		return;
+	}
+
+	const run = (override_customer) => pepl_call_create_quotation_from_cst(frm, override_customer);
+
+	if (frm.doc.customer) {
+		run(null);
+		return;
+	}
+
+	frappe.db.get_value('PEPL Product Master', frm.doc.linked_product, 'primary_customer').then((r) => {
+		const fallback = r && r.message && r.message.primary_customer;
+		if (fallback) {
+			run(null);
+			return;
+		}
+		pepl_prompt_customer_for_quotation(frm, (cust) => run(cust));
 	});
 }
 
@@ -327,31 +396,49 @@ function pepl_open_rate_reference_dialog(frm, cdt, cdn) {
 				],
 				primary_action_label: __('Apply'),
 				primary_action() {
-					const manual = flt(dialog.get_value('manual_rate'));
-					const rowNow = locals[cdt][cdn];
-					const qpaApply = flt(rowNow.quantity_per_assembly) || 1;
-					const amount = flt(manual * qpaApply);
-					if (!manual && !amount) {
+					const manual_rate = flt(dialog.get_value('manual_rate'));
+					const row = locals[cdt][cdn];
+					const qty_per_asm = pepl_quantity_per_assembly_from_row(frm, cdt, cdn);
+					const computed_amount = flt(manual_rate * qty_per_asm);
+
+					console.log(
+						'[Rate Ref] manual_rate=',
+						manual_rate,
+						'qty_per_asm=',
+						qty_per_asm,
+						'computed=',
+						computed_amount,
+						'row=',
+						row
+					);
+
+					if (!manual_rate && !computed_amount) {
 						frappe.msgprint(__('Enter a manual rate.'));
 						return;
 					}
-					if (mo === 'Bought Out') {
-						frappe.model.set_value(cdt, cdn, 'bought_out_cost', amount);
-					} else {
-						frappe.model.set_value(cdt, cdn, 'raw_material_cost', amount);
-					}
-					const rateSrc =
-						__('Manual: {0} (per unit) × {1} (qty/assembly) = {2}', [
-							manual,
-							qpaApply,
-							amount,
-						]);
-					frappe.model.set_value(cdt, cdn, 'rate_source', rateSrc);
-					if (typeof calculate_subtotal === 'function') {
-						calculate_subtotal(frm, cdt, cdn);
-					}
-					dialog.hide();
-					frappe.show_alert({ message: __('Rate applied'), indicator: 'green' });
+
+					const is_bought_out = row.manufactured_or_bought_out === 'Bought Out';
+					const target_field = is_bought_out ? 'bought_out_cost' : 'raw_material_cost';
+					console.log('[Rate Ref] writing', computed_amount, 'to', target_field);
+
+					const rate_source_str =
+						'Manual: ₹' +
+						manual_rate.toFixed(2) +
+						' × ' +
+						qty_per_asm +
+						' = ₹' +
+						computed_amount.toFixed(2);
+
+					frappe.model.set_value(cdt, cdn, target_field, computed_amount);
+					frappe.model.set_value(cdt, cdn, 'rate_source', rate_source_str);
+					frappe.after_ajax(() => {
+						frm.refresh_field('components');
+						if (typeof calculate_subtotal === 'function') {
+							calculate_subtotal(frm, cdt, cdn);
+						}
+						dialog.hide();
+						frappe.show_alert({ message: __('Rate applied'), indicator: 'green' });
+					});
 				},
 			});
 

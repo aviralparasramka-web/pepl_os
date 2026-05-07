@@ -435,7 +435,7 @@ def _cst_has_priced_component_lines(cst):
 
 
 @frappe.whitelist()
-def create_quotation_from_cst(cst_name):
+def create_quotation_from_cst(cst_name, override_customer=None):
     """Draft Quotation from CST linked customer and item."""
     if not cst_name:
         frappe.throw(_("CST name required"))
@@ -447,12 +447,19 @@ def create_quotation_from_cst(cst_name):
     if not cst.linked_item:
         frappe.throw(_("CST has no linked item"))
 
-    customer = cst.get("customer") or frappe.db.get_value(
+    oc = override_customer
+    if isinstance(oc, str):
+        oc = oc.strip() or None
+
+    customer = oc or cst.get("customer") or frappe.db.get_value(
         "PEPL Product Master", cst.linked_product, "primary_customer"
     )
     if not customer:
         frappe.throw(
-            _("No customer on this Cost Sheet or its Linked Product (Primary Customer).")
+            _(
+                "No customer selected: set Customer on the Cost Sheet, Primary Customer on "
+                "Linked Product, or choose Customer when creating the quotation."
+            )
         )
 
     if not _cst_has_priced_component_lines(cst):
