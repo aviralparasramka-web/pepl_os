@@ -1,0 +1,281 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "naming_series:",
+ "creation": "2026-05-06 12:00:00",
+ "doctype": "DocType",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "linked_purchase_order",
+  "supplier",
+  "linked_so",
+  "linked_mr",
+  "po_date",
+  "po_amount",
+  "expected_delivery_date",
+  "column_break_pt1",
+  "current_status",
+  "days_outstanding",
+  "ageing_bucket",
+  "priority",
+  "section_ack",
+  "acknowledgment_date",
+  "dispatch_date",
+  "lr_number",
+  "transporter",
+  "vehicle_number",
+  "section_rcpt",
+  "grn_reference",
+  "grn_date",
+  "section_insp",
+  "inspection_status",
+  "discrepancy_flag",
+  "discrepancy_reason",
+  "section_dn",
+  "debit_note_flag",
+  "debit_note_reason",
+  "debit_note_amount",
+  "section_notes",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "PT-.YYYY.-.####",
+   "reqd": 1,
+   "hidden": 1,
+   "default": "PT-.YYYY.-.####"
+  },
+  {
+   "fieldname": "linked_purchase_order",
+   "fieldtype": "Link",
+   "label": "Linked Purchase Order",
+   "options": "Purchase Order",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier",
+   "fetch_from": "linked_purchase_order.supplier",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "linked_so",
+   "fieldtype": "Link",
+   "label": "Linked Sales Order",
+   "options": "Sales Order",
+   "read_only": 1,
+   "description": "Auto-fetched if PO is order-driven"
+  },
+  {
+   "fieldname": "linked_mr",
+   "fieldtype": "Link",
+   "label": "Linked Material Request",
+   "options": "Material Request",
+   "read_only": 1,
+   "description": "Auto-fetched when PO is sourced from MR"
+  },
+  {
+   "fieldname": "po_date",
+   "fieldtype": "Date",
+   "label": "PO Date",
+   "fetch_from": "linked_purchase_order.transaction_date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "po_amount",
+   "fieldtype": "Currency",
+   "label": "PO Amount (INR)",
+   "fetch_from": "linked_purchase_order.grand_total",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "expected_delivery_date",
+   "fieldtype": "Date",
+   "label": "Expected Delivery Date",
+   "fetch_from": "linked_purchase_order.schedule_date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_pt1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "current_status",
+   "fieldtype": "Select",
+   "label": "Current Status",
+   "options": "PO Sent\nAcknowledged\nMaterial Dispatched\nReceived\nInspected - Pass\nInspected - Fail\nClosed",
+   "default": "PO Sent",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "days_outstanding",
+   "fieldtype": "Int",
+   "label": "Days Outstanding",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ageing_bucket",
+   "fieldtype": "Select",
+   "label": "Ageing Bucket",
+   "options": "0-7 days\n8-15 days\n16-30 days\n30+ days\nClosed",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "label": "Priority",
+   "options": "\nRoutine\nUrgent\nCritical",
+   "default": "Routine",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "section_ack",
+   "fieldtype": "Section Break",
+   "label": "Acknowledgment & Dispatch",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "acknowledgment_date",
+   "fieldtype": "Date",
+   "label": "Acknowledgment Date"
+  },
+  {
+   "fieldname": "dispatch_date",
+   "fieldtype": "Date",
+   "label": "Dispatch Date"
+  },
+  {
+   "fieldname": "lr_number",
+   "fieldtype": "Data",
+   "label": "LR Number"
+  },
+  {
+   "fieldname": "transporter",
+   "fieldtype": "Data",
+   "label": "Transporter"
+  },
+  {
+   "fieldname": "vehicle_number",
+   "fieldtype": "Data",
+   "label": "Vehicle Number"
+  },
+  {
+   "fieldname": "section_rcpt",
+   "fieldtype": "Section Break",
+   "label": "Receipt",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "grn_reference",
+   "fieldtype": "Link",
+   "label": "GRN Reference",
+   "options": "Purchase Receipt",
+   "read_only": 1,
+   "description": "Set when a Purchase Receipt linked to this PO is submitted"
+  },
+  {
+   "fieldname": "grn_date",
+   "fieldtype": "Date",
+   "label": "GRN Date",
+   "fetch_from": "grn_reference.posting_date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_insp",
+   "fieldtype": "Section Break",
+   "label": "Inspection",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "inspection_status",
+   "fieldtype": "Select",
+   "label": "Inspection Status",
+   "options": "\nPass\nFail\nPartial",
+   "description": "Update after goods receipt inspection (mirrors GRN vs QC workflow)"
+  },
+  {
+   "fieldname": "discrepancy_flag",
+   "fieldtype": "Check",
+   "label": "Discrepancy Flag",
+   "default": "0"
+  },
+  {
+   "fieldname": "discrepancy_reason",
+   "fieldtype": "Small Text",
+   "label": "Discrepancy Reason",
+   "depends_on": "eval:doc.discrepancy_flag==1"
+  },
+  {
+   "fieldname": "section_dn",
+   "fieldtype": "Section Break",
+   "label": "Debit Note",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "debit_note_flag",
+   "fieldtype": "Check",
+   "label": "Debit Note Flag",
+   "default": "0"
+  },
+  {
+   "fieldname": "debit_note_reason",
+   "fieldtype": "Small Text",
+   "label": "Debit Note Reason",
+   "depends_on": "eval:doc.debit_note_flag==1"
+  },
+  {
+   "fieldname": "debit_note_amount",
+   "fieldtype": "Currency",
+   "label": "Debit Note Amount (INR)",
+   "depends_on": "eval:doc.debit_note_flag==1"
+  },
+  {
+   "fieldname": "section_notes",
+   "fieldtype": "Section Break",
+   "label": "Notes",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Text Editor",
+   "label": "Remarks"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-05-06 12:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "PEPL Purchase Tracker",
+ "owner": "Administrator",
+ "permissions": [
+  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "System Manager", "share": 1, "write": 1},
+  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Purchase Manager", "share": 1, "write": 1},
+  {"create": 1, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Purchase User", "share": 1, "write": 1},
+  {"create": 0, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Accounts Manager", "share": 0, "write": 0},
+  {"create": 0, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Stock Manager", "share": 1, "write": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "linked_purchase_order",
+ "track_changes": 1,
+ "track_views": 1
+}

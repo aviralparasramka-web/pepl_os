@@ -52,6 +52,61 @@ frappe.ui.form.on("PEPL CST Cost Sheet", {
 				});
 			}, __("Actions"));
 		}
+
+		if (!frm.is_new() && frm.doc.linked_item && frm.doc.customer) {
+			frm.add_custom_button(__("Create Quotation"), function() {
+				frappe.call({
+					method: "pepl_os.pepl_os.api.cst_intelligence.create_quotation_from_cst",
+					args: { cst_name: frm.doc.name },
+					callback: function(r) {
+						const qname = r.message && r.message.name;
+						if (!qname) return;
+						frappe.confirm(
+							__('Quotation {0} created. Send to customer now?', [qname]),
+							function() {
+								frappe.call({
+									method: "pepl_os.pepl_os.api.cst_intelligence.get_quotation_email_context",
+									args: { quotation_name: qname },
+									callback: function(res) {
+										const ctx = res.message || {};
+										if (!ctx.recipients) {
+											frappe.msgprint({
+												title: __("Email"),
+												message: __("No customer email on quotation or customer record — add email, then send manually."),
+												indicator: "orange"
+											});
+										}
+										if (frappe.views && frappe.views.CommunicationComposer) {
+											try {
+												new frappe.views.CommunicationComposer({
+													doc: {
+														doctype: "Quotation",
+														name: qname
+													},
+													subject: ctx.subject || "",
+													recipients: ctx.recipients || "",
+													content: ctx.message || "",
+													message: ctx.message || "",
+													attach_document_print: true
+												});
+											} catch (e) {
+												frappe.msgprint(__("Open Quotation {0} and use Menu → Email to send.", [qname]));
+											}
+										}
+									}
+								});
+							},
+							function() {
+								frappe.show_alert({
+									message: __("Quotation created. Send manually when ready."),
+									indicator: "blue"
+								});
+							}
+						);
+					}
+				});
+			}, __("Actions"));
+		}
 	},
 
 	final_bid_price(frm) {

@@ -1,0 +1,349 @@
+// Copyright (c) 2026, Parasramka Engineering Pvt. Ltd. and contributors
+
+frappe.ui.form.on('PEPL CST Cost Sheet', {
+	refresh(frm) {
+		frm.remove_custom_button(__('Import from BOM'), __('CST Intelligence'));
+		if (!frm.is_new() && frm.doc.linked_item) {
+			frm.add_custom_button(
+				__('Import from BOM'),
+				() => pepl_import_bom_components(frm),
+				__('CST Intelligence')
+			);
+		}
+		frm.remove_custom_button(__('Rate Reference (selected row)'), __('CST Intelligence'));
+		frm.add_custom_button(
+			__('Rate Reference (selected row)'),
+			() => pepl_open_rate_ref_selected_row(frm),
+			__('CST Intelligence')
+		);
+	},
+});
+
+frappe.ui.form.on('PEPL CST Component', {
+	component_item(frm, cdt, cdn) {
+		frappe.after_ajax(() => {
+			const row = locals[cdt][cdn];
+			if (!row || !row.component_item) return;
+			if (pepl_row_cost_blank(row)) {
+				pepl_open_rate_reference_dialog(frm, cdt, cdn);
+			}
+		});
+	},
+	manufactured_or_bought_out(frm, cdt, cdn) {
+		const row = locals[cdt][cdn];
+		if (row && row.component_item && pepl_row_cost_blank(row)) {
+			pepl_open_rate_reference_dialog(frm, cdt, cdn);
+		}
+	},
+});
+
+function pepl_row_cost_blank(row) {
+	const mo = row.manufactured_or_bought_out || 'Manufactured';
+	if (mo === 'Bought Out') {
+		return !flt(row.bought_out_cost);
+	}
+	return !flt(row.raw_material_cost);
+}
+
+function pepl_import_bom_components(frm) {
+	frappe.call({
+		method: 'pepl_os.pepl_os.api.cst_intelligence.import_components_from_bom',
+		args: { cst_name: frm.doc.name },
+		callback(r) {
+			const msg = r.message || {};
+			if (msg.error) {
+				frappe.msgprint({ title: __('BOM import'), message: msg.error, indicator: 'red' });
+				return;
+			}
+			const comps = msg.components || [];
+			if (!comps.length) {
+				frappe.msgprint(__('No stock BOM lines found.'));
+				return;
+			}
+			const bomLabel = msg.bom_name || '';
+			frappe.confirm(
+				__(
+					'Import {0} components from BOM {1}? This will append to existing components.',
+					[comps.length, bomLabel]
+				),
+				() => {
+					let imported = 0;
+					for (const c of comps) {
+						const r = frm.add_child('components', {
+							manufactured_or_bought_out: c.manufactured_or_bought_out || 'Manufactured',
+							component_item: c.component_item,
+							rm_group: c.rm_group,
+							quantity_per_assembly: c.quantity_per_assembly,
+							uom: c.uom,
+							component_drawing_no: c.component_drawing_no || '',
+						});
+						imported += 1;
+						if (typeof calculate_subtotal === 'function') {
+							calculate_subtotal(frm, 'PEPL CST Component', r.name);
+						}
+					}
+					frm.refresh_field('components');
+					const totalImported =
+						msg.total_imported != null ? msg.total_imported : imported;
+					frappe.show_alert({
+						message: __('Imported {0} components', [totalImported]),
+						indicator: 'green',
+					});
+					const unmappedCount =
+						msg.unmapped_count != null ? msg.unmapped_count : 0;
+					const unmappedItems = msg.unmapped_items || [];
+					if (unmappedCount > 0) {
+						let body =
+							'<p>' +
+							__('The following components need manual RM Group classification:') +
+							'</p>';
+						if (unmappedItems.length) {
+							body += '<ul>';
+							for (const u of unmappedItems) {
+								body +=
+									'<li>' +
+									frappe.utils.escape_html(
+										u.item_name || u.component_item || ''
+									) +
+									'</li>';
+							}
+							body += '</ul>';
+						} else {
+							body +=
+								'<p>' +
+								__('({0} item(s))', [unmappedCount]) +
+								'</p>';
+						}
+						body +=
+							'<p>' +
+							__(
+								'Please review the imported components and set the correct RM Group before saving.'
+							) +
+							'</p>';
+						frappe.msgprint({
+							title: __('RM Group Classification Needed'),
+							message: body,
+							indicator: 'orange',
+						});
+					}
+				},
+				() => {}
+			);
+		},
+	});
+}
+
+function pepl_open_rate_ref_selected_row(frm) {
+	const grid = frm.fields_dict.components && frm.fields_dict.components.grid;
+	if (!grid) return;
+	const doc = grid.get_selected_children()[0];
+	if (!doc) {
+		frappe.msgprint(__('Select a component row first.'));
+		return;
+	}
+	const cdn = doc.name;
+	pepl_open_rate_reference_dialog(frm, 'PEPL CST Component', cdn);
+}
+
+function pepl_open_rate_reference_dialog(frm, cdt, cdn) {
+	const row = locals[cdt][cdn];
+	if (!row || !row.component_item) {
+		frappe.msgprint(__('Set Item on the row first.'));
+		return;
+	}
+
+	frappe.call({
+		method: 'pepl_os.pepl_os.api.cst_intelligence.get_rate_references',
+		args: { item_code: row.component_item },
+		callback(r) {
+			const refs = (r.message && r.message.references) || [];
+			const mo = row.manufactured_or_bought_out || 'Manufactured';
+			const targetLabel =
+				mo === 'Bought Out' ? __('Bought Out Cost') : __('Raw Material Cost');
+			const qpa = flt(row.quantity_per_assembly) || 1;
+			const avail = refs.filter((x) => x.available);
+			let defaultManual = 0;
+			if (mo === 'Bought Out') {
+				defaultManual = qpa ? flt(row.bought_out_cost) / qpa : 0;
+			} else {
+				defaultManual = qpa ? flt(row.raw_material_cost) / qpa : 0;
+			}
+			if (!defaultManual && avail.length && avail[0].rate != null) {
+				defaultManual = flt(avail[0].rate);
+			}
+
+			const dialog = new frappe.ui.Dialog({
+				title: __('Rate Reference for {0}', [row.component_item]),
+				fields: [
+					{
+						fieldname: 'hint',
+						fieldtype: 'HTML',
+						options:
+							'<p class="text-muted small">' +
+							__(
+								'Manual Rate will be applied to: <strong>{0}</strong> (per-unit rate × quantity per assembly = {1}).',
+								[targetLabel, qpa]
+							) +
+							'</p>' +
+							pepl_build_refs_table_html(refs),
+					},
+					{
+						fieldname: 'manual_rate',
+						label: __('Manual Rate (per unit)'),
+						fieldtype: 'Currency',
+						default: defaultManual,
+					},
+				],
+				primary_action_label: __('Apply'),
+				primary_action() {
+					const manual = flt(dialog.get_value('manual_rate'));
+					const amount = manual * qpa;
+					if (!manual && !amount) {
+						frappe.msgprint(__('Enter a manual rate.'));
+						return;
+					}
+					if (mo === 'Bought Out') {
+						frappe.model.set_value(cdt, cdn, 'bought_out_cost', amount);
+					} else {
+						frappe.model.set_value(cdt, cdn, 'raw_material_cost', amount);
+					}
+					frappe.model.set_value(cdt, cdn, 'rate_source', __('Manual (after review)'));
+					if (typeof calculate_subtotal === 'function') {
+						calculate_subtotal(frm, cdt, cdn);
+					}
+					dialog.hide();
+					frappe.show_alert({ message: __('Rate applied'), indicator: 'green' });
+				},
+			});
+
+			dialog.add_custom_action(__('Request Fresh Quote from Vendor'), () => {
+				dialog.hide();
+				pepl_open_vendor_rfq_dialog(frm, row.component_item, qpa);
+			});
+
+			dialog.show();
+		},
+	});
+}
+
+function pepl_build_refs_table_html(refs) {
+	const rows = refs.filter((x) => x.available);
+	if (!rows.length) {
+		return '<p class="text-muted">' + __('No automated references available.') + '</p>';
+	}
+	let h =
+		'<div class="table-responsive"><table class="table table-bordered table-condensed" style="font-size:12px;">';
+	h +=
+		'<thead><tr><th>Rank</th><th>Source</th><th>Rate</th><th>Age (days)</th><th>Reference</th></tr></thead><tbody>';
+	for (const x of rows) {
+		h +=
+			'<tr><td>' +
+			frappe.utils.escape_html(String(x.rank)) +
+			'</td><td>' +
+			frappe.utils.escape_html(x.source || '') +
+			'</td><td>' +
+			frappe.utils.escape_html(String(x.rate != null ? x.rate : '')) +
+			'</td><td>' +
+			frappe.utils.escape_html(String(x.age_days != null ? x.age_days : '—')) +
+			'</td><td>' +
+			frappe.utils.escape_html(x.reference_doc || '') +
+			'</td></tr>';
+	}
+	h += '</tbody></table></div>';
+	return h;
+}
+
+function pepl_open_vendor_rfq_dialog(frm, item_code, defaultQty) {
+	if (frm.is_new()) {
+		frappe.msgprint(__('Save the CST before emailing vendors.'));
+		return;
+	}
+	frappe.call({
+		method: 'pepl_os.pepl_os.api.cst_intelligence.get_past_suppliers_for_item',
+		args: { item_code, lookback_months: 18 },
+		callback(r) {
+			const suppliers = (r.message && r.message.suppliers) || [];
+			if (!suppliers.length) {
+				frappe.msgprint(__('No suppliers found for this item in the last 18 months.'));
+				return;
+			}
+			let checksHtml = '';
+			for (const s of suppliers) {
+				checksHtml +=
+					'<div class="checkbox"><label>' +
+					'<input type="checkbox" class="pepl-rfq-supplier" data-supplier="' +
+					frappe.utils.escape_html(s.supplier) +
+					'" /> ' +
+					frappe.utils.escape_html(s.supplier_name || s.supplier) +
+					' — ' +
+					__('Last PO') +
+					': ' +
+					frappe.utils.escape_html(s.last_po_date || '—') +
+					', ' +
+					__('Rate') +
+					': ' +
+					frappe.utils.escape_html(String(s.last_rate != null ? s.last_rate : '—')) +
+					'</label></div>';
+			}
+
+			const d2 = new frappe.ui.Dialog({
+				title: __('Request quote from vendors'),
+				fields: [
+					{
+						fieldname: 'vendor_html',
+						fieldtype: 'HTML',
+						options:
+							'<p class="text-muted small">' +
+							__('Select vendors to email.') +
+							'</p>' +
+							checksHtml,
+					},
+					{
+						fieldname: 'qty',
+						label: __('Quantity'),
+						fieldtype: 'Float',
+						default: defaultQty || 1,
+					},
+					{
+						fieldname: 'required_by',
+						label: __('Required by'),
+						fieldtype: 'Date',
+					},
+				],
+				primary_action_label: __('Send emails'),
+				primary_action() {
+					const chosen = [];
+					d2.$wrapper.find('.pepl-rfq-supplier:checked').each(function () {
+						chosen.push($(this).attr('data-supplier'));
+					});
+					if (!chosen.length) {
+						frappe.msgprint(__('Select at least one supplier.'));
+						return;
+					}
+					frappe.call({
+						method: 'pepl_os.pepl_os.api.cst_intelligence.send_rfq_email_to_suppliers',
+						args: {
+							item_code,
+							supplier_list: JSON.stringify(chosen),
+							qty: d2.get_value('qty'),
+							cst_name: frm.doc.name,
+							item_metadata: JSON.stringify({
+								required_by: d2.get_value('required_by'),
+							}),
+						},
+						callback(res) {
+							const results = (res.message && res.message.results) || [];
+							const ok = results.filter((x) => x.sent).length;
+							frappe.show_alert({
+								message: __('Sent rate request to {0} vendor(s)', [ok]),
+								indicator: ok ? 'green' : 'orange',
+							});
+							d2.hide();
+						},
+					});
+				},
+			});
+			d2.show();
+		},
+	});
+}
