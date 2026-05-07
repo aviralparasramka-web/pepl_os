@@ -6,3 +6,5 @@ pepl_os.pepl_os.patches.add_purchase_item_custom_fields
 pepl_os.pepl_os.patches.add_purchase_module_custom_fields
 pepl_os.pepl_os.patches.backfill_supplier_approvals
 pepl_os.pepl_os.patches.add_mr_dashboard_html_field
+pepl_os.pepl_os.patches.add_item_product_fields
+pepl_os.pepl_os.patches.add_sales_order_tender_fields
