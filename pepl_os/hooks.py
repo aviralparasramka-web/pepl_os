@@ -63,6 +63,8 @@ doc_events = {
 
 doctype_js = {
     "Material Request": "public/js/material_request_dashboard.js",
+    "PEPL Tender": "public/js/tender_bid_readiness.js",
+    "Sales Order": "public/js/sales_order_product_readiness.js",
 }
 
 page_js = {}

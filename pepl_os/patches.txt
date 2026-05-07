@@ -1,4 +1,4 @@
-pepl_os.pepl_os.patches.v0_0_1.delete_old_renamed_reports
+﻿pepl_os.pepl_os.patches.v0_0_1.delete_old_renamed_reports
 pepl_os.pepl_os.patches.v0_0_1.install_rm_group_fixtures
 pepl_os.pepl_os.patches.v1_0.cleanup_old_module5
 pepl_os.pepl_os.patches.restructure_item_groups
@@ -8,3 +8,5 @@ pepl_os.pepl_os.patches.backfill_supplier_approvals
 pepl_os.pepl_os.patches.add_mr_dashboard_html_field
 pepl_os.pepl_os.patches.add_item_product_fields
 pepl_os.pepl_os.patches.add_sales_order_tender_fields
+pepl_os.pepl_os.patches.add_tender_bid_readiness_field
+pepl_os.pepl_os.patches.add_so_product_readiness_field

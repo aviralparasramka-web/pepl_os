@@ -4,6 +4,12 @@ import frappe
 from frappe import _
 from frappe.utils import add_days, flt, today
 
+from pepl_os.pepl_os.api.inventory_intelligence import (
+    get_on_order_position,
+    get_open_mr_position,
+    get_stock_position,
+)
+
 
 def create_mr_draft_from_so(doc, method=None):
     """When a Sales Order is submitted, walk each product item's default
@@ -21,7 +27,7 @@ def create_mr_draft_from_so(doc, method=None):
                 f"MR auto-draft skipped for SO {doc.name}: 'is_product' "
                 f"custom field missing on Item DocType. Suvadip's custom "
                 f"field deployment may be pending.",
-                "MR Auto-Draft Skipped"
+                "MR Auto-Draft Skipped",
             )
             return
 
@@ -34,14 +40,16 @@ def create_mr_draft_from_so(doc, method=None):
             return
 
         mr.insert(ignore_permissions=True)
-        frappe.msgprint(_(
-            "Material Request {0} drafted with {1} component(s) for "
-            "Sales Order {2}. Review in Purchase before submission."
-        ).format(mr.name, len(mr.items), doc.name))
+        frappe.msgprint(
+            _(
+                "Material Request {0} drafted with {1} component(s) for "
+                "Sales Order {2}. Review in Purchase before submission."
+            ).format(mr.name, len(mr.items), doc.name)
+        )
     except Exception as e:
         frappe.log_error(
             f"MR auto-draft failed for SO {doc.name}: {str(e)}",
-            "MR Auto-Draft from SO"
+            "MR Auto-Draft from SO",
         )
 
 
@@ -51,7 +59,7 @@ def _aggregate_shortfalls(so):
     Returns dict: {item_code: {qty, uom}} for items with shortfall > 0."""
     aggregated = {}
 
-    for so_item in (so.items or []):
+    for so_item in so.items or []:
         is_product = frappe.db.get_value("Item", so_item.item_code, "is_product") or 0
         if not is_product:
             # Bought-out items being resold — they are themselves the shortfall
@@ -61,13 +69,13 @@ def _aggregate_shortfalls(so):
         bom_name = frappe.db.get_value(
             "BOM",
             {"item": so_item.item_code, "is_default": 1, "is_active": 1, "docstatus": 1},
-            "name"
+            "name",
         )
         if not bom_name:
             frappe.log_error(
                 f"No active default BOM for product {so_item.item_code} (SO {so.name}). "
                 f"MR auto-draft skipped for this line.",
-                "MR Auto-Draft Warning"
+                "MR Auto-Draft Warning",
             )
             continue
 
@@ -75,7 +83,7 @@ def _aggregate_shortfalls(so):
         bom_qty = flt(bom.quantity) or 1
         scale = flt(so_item.qty) / bom_qty
 
-        for bom_row in (bom.items or []):
+        for bom_row in bom.items or []:
             # Skip non-stock items (services, etc.)
             is_stock = frappe.db.get_value("Item", bom_row.item_code, "is_stock_item") or 0
             if not is_stock:
@@ -91,9 +99,9 @@ def _aggregate_shortfalls(so):
     # Subtract supply (stock + on-order + open-MR)
     shortfalls = {}
     for item_code, data in aggregated.items():
-        in_stock = _get_stock_position(item_code)
-        on_order = _get_on_order_position(item_code)
-        open_mr = _get_open_mr_position(item_code)
+        in_stock = get_stock_position(item_code)
+        on_order = get_on_order_position(item_code)
+        open_mr = get_open_mr_position(item_code)
         net_supply = in_stock + on_order + open_mr
         shortfall = data["qty"] - net_supply
         if shortfall > 0:
@@ -124,45 +132,14 @@ def _build_mr_draft(so, shortfalls):
     mr.auto_drafted = 1
 
     for item_code, data in shortfalls.items():
-        mr.append("items", {
-            "item_code": item_code,
-            "qty": data["qty"],
-            "uom": data["uom"],
-            "schedule_date": so.delivery_date or add_days(today(), 14),
-        })
+        mr.append(
+            "items",
+            {
+                "item_code": item_code,
+                "qty": data["qty"],
+                "uom": data["uom"],
+                "schedule_date": so.delivery_date or add_days(today(), 14),
+            },
+        )
 
     return mr
-
-
-# ─────────────────────────────────────────────
-# Supply position helpers (also used by inventory_intelligence API)
-# ─────────────────────────────────────────────
-
-def _get_stock_position(item_code):
-    result = frappe.db.sql(
-        "SELECT COALESCE(SUM(actual_qty), 0) FROM `tabBin` WHERE item_code = %s",
-        (item_code,)
-    )
-    return flt(result[0][0]) if result else 0
-
-
-def _get_on_order_position(item_code):
-    result = frappe.db.sql("""
-        SELECT COALESCE(SUM(poi.qty - poi.received_qty), 0)
-        FROM `tabPurchase Order Item` poi
-        INNER JOIN `tabPurchase Order` po ON po.name = poi.parent
-        WHERE poi.item_code = %s AND po.docstatus = 1
-        AND po.status NOT IN ('Closed', 'Completed', 'Cancelled')
-    """, (item_code,))
-    return flt(result[0][0]) if result else 0
-
-
-def _get_open_mr_position(item_code):
-    result = frappe.db.sql("""
-        SELECT COALESCE(SUM(mri.qty - mri.ordered_qty), 0)
-        FROM `tabMaterial Request Item` mri
-        INNER JOIN `tabMaterial Request` mr ON mr.name = mri.parent
-        WHERE mri.item_code = %s AND mr.docstatus = 1
-        AND mr.status NOT IN ('Issued', 'Stopped', 'Cancelled')
-    """, (item_code,))
-    return flt(result[0][0]) if result else 0
