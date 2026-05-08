@@ -436,7 +436,7 @@ def _cst_has_priced_component_lines(cst):
 
 @frappe.whitelist()
 def apply_manual_rate(cst_name, row_idx, manual_rate):
-    """Server-side authoritative rate × qty calculation. Bypasses client-side grid binding issues."""
+    """Apply manual per-unit rate via input_rate_per_unit; child validate computes cost × qty."""
 
     if not cst_name:
         frappe.throw(_("CST name required"))
@@ -460,32 +460,37 @@ def apply_manual_rate(cst_name, row_idx, manual_rate):
     if not target_row:
         frappe.throw(_("Component row at position {0} not found").format(row_idx_int))
 
-    qty_per_asm = flt(target_row.quantity_per_assembly) or 1.0
     manual_rate_flt = flt(manual_rate)
     if manual_rate_flt <= 0:
         frappe.throw(_("Please enter a valid Manual Rate"))
 
-    computed_amount = manual_rate_flt * qty_per_asm
-
-    is_bought_out = (target_row.manufactured_or_bought_out or "").strip() == "Bought Out"
-    target_field = "bought_out_cost" if is_bought_out else "raw_material_cost"
-
-    setattr(target_row, target_field, computed_amount)
-    target_row.rate_source = (
-        f"Manual: ₹{manual_rate_flt:.2f} × {qty_per_asm:g} = ₹{computed_amount:.2f}"
-    )
+    target_row.input_rate_per_unit = manual_rate_flt
 
     cst.save(ignore_permissions=False)
+
+    cst.reload()
+    refreshed_row = None
+    for r in cst.components:
+        if r.idx == row_idx_int:
+            refreshed_row = r
+            break
+    if not refreshed_row:
+        frappe.throw(_("Component row at position {0} not found after save").format(row_idx_int))
+
+    qty_per_asm = flt(refreshed_row.quantity_per_assembly) or 1.0
+    is_bought_out = (refreshed_row.manufactured_or_bought_out or "").strip() == "Bought Out"
+    target_field = "bought_out_cost" if is_bought_out else "raw_material_cost"
+    computed_amount = flt(getattr(refreshed_row, target_field, 0))
 
     return {
         "success": True,
         "row_idx": row_idx_int,
-        "item_name": target_row.component_item,
+        "item_name": refreshed_row.component_item,
         "target_field": target_field,
         "qty_per_assembly": qty_per_asm,
         "manual_rate": manual_rate_flt,
         "computed_amount": computed_amount,
-        "rate_source": target_row.rate_source,
+        "rate_source": refreshed_row.rate_source or "",
     }
 
 
