@@ -462,18 +462,34 @@ function pepl_open_vendor_rfq_dialog(frm, item_code, defaultQty) {
 		callback(r) {
 			const suppliers = (r.message && r.message.suppliers) || [];
 			if (!suppliers.length) {
-				frappe.msgprint(__('No suppliers found for this item in the last 18 months.'));
+				frappe.msgprint(
+					__(
+						'No suppliers found for this item or other items in its RM Group (mapped Item Group) in the last 18 months.'
+					)
+				);
 				return;
 			}
 			let checksHtml = '';
 			for (const s of suppliers) {
+				let sourceLine = '';
+				if (s.source === 'item_history') {
+					sourceLine =
+						' <span class="text-muted small">(' + __('via item history') + ')</span>';
+				} else if (s.source === 'rm_group_history') {
+					const rg = s.rm_group ? frappe.utils.escape_html(String(s.rm_group)) : '—';
+					sourceLine =
+						' <span class="text-muted small">(' +
+						__('via RM Group {0}', [rg]) +
+						')</span>';
+				}
 				checksHtml +=
 					'<div class="checkbox"><label>' +
 					'<input type="checkbox" class="pepl-rfq-supplier" data-supplier="' +
 					frappe.utils.escape_html(s.supplier) +
 					'" /> ' +
 					frappe.utils.escape_html(s.supplier_name || s.supplier) +
-					' — ' +
+					sourceLine +
+					'<br/><span class="text-muted small">' +
 					__('Last PO') +
 					': ' +
 					frappe.utils.escape_html(s.last_po_date || '—') +
@@ -481,7 +497,7 @@ function pepl_open_vendor_rfq_dialog(frm, item_code, defaultQty) {
 					__('Rate') +
 					': ' +
 					frappe.utils.escape_html(String(s.last_rate != null ? s.last_rate : '—')) +
-					'</label></div>';
+					'</span></label></div>';
 			}
 
 			const d2 = new frappe.ui.Dialog({

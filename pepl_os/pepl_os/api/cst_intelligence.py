@@ -269,15 +269,26 @@ def _item_spec_text(linked_item_code, linked_product):
     return " | ".join(spec_parts) if spec_parts else ""
 
 
-@frappe.whitelist()
-def get_past_suppliers_for_item(item_code, lookback_months=18):
-    """Distinct suppliers from submitted POs within lookback window."""
-    if not item_code:
-        frappe.throw(_("Item code required"))
+def _suppliers_from_po_rows(rows, source, rm_group=None):
+    """Build supplier dict list from grouped PO SQL rows."""
+    out = []
+    for r in rows or []:
+        sup = r.supplier
+        if not sup:
+            continue
+        row = {
+            "supplier": sup,
+            "supplier_name": frappe.db.get_value("Supplier", sup, "supplier_name") or sup,
+            "last_po_date": str(r.last_po_date) if r.last_po_date else None,
+            "last_rate": flt(r.last_rate) if r.last_rate is not None else None,
+            "source": source,
+            "rm_group": rm_group,
+        }
+        out.append(row)
+    return out
 
-    months = int(lookback_months) or 18
-    cutoff = add_months(getdate(today()), -months)
 
+def _tier1_suppliers_for_item(item_code, cutoff):
     rows = frappe.db.sql(
         """
         SELECT po.supplier AS supplier,
@@ -301,21 +312,77 @@ def get_past_suppliers_for_item(item_code, lookback_months=18):
         (item_code, item_code, cutoff),
         as_dict=True,
     )
+    return _suppliers_from_po_rows(rows, "item_history", rm_group=None)
 
-    out = []
-    for r in rows:
-        sup = r.supplier
-        if not sup:
-            continue
-        out.append(
-            {
-                "supplier": sup,
-                "supplier_name": frappe.db.get_value("Supplier", sup, "supplier_name") or sup,
-                "last_po_date": str(r.last_po_date) if r.last_po_date else None,
-                "last_rate": flt(r.last_rate) if r.last_rate is not None else None,
-            }
-        )
-    return {"suppliers": out}
+
+def _tier2_suppliers_by_rm_group_item_family(item_code, cutoff):
+    item_group = frappe.db.get_value("Item", item_code, "item_group")
+    if not item_group:
+        return []
+
+    rm_group = frappe.db.get_value(
+        "PEPL RM Group",
+        {"linked_item_group": item_group},
+        "name",
+    )
+    if not rm_group:
+        return []
+
+    sibling_items = frappe.get_all(
+        "Item",
+        filters={"item_group": item_group},
+        pluck="name",
+    )
+    sibling_items = [ic for ic in sibling_items if ic and ic != item_code]
+    if not sibling_items:
+        return []
+
+    ph = ", ".join(["%s"] * len(sibling_items))
+    sql = f"""
+        SELECT po.supplier AS supplier,
+               MAX(po.transaction_date) AS last_po_date,
+               (SELECT poi.rate
+                FROM `tabPurchase Order Item` poi
+                INNER JOIN `tabPurchase Order` p2 ON p2.name = poi.parent
+                WHERE poi.item_code IN ({ph})
+                  AND p2.supplier = po.supplier
+                  AND p2.docstatus = 1
+                ORDER BY p2.transaction_date DESC, poi.modified DESC
+                LIMIT 1
+               ) AS last_rate
+        FROM `tabPurchase Order` po
+        INNER JOIN `tabPurchase Order Item` poi ON poi.parent = po.name
+        WHERE poi.item_code IN ({ph})
+          AND po.docstatus = 1
+          AND po.transaction_date >= %s
+        GROUP BY po.supplier
+        ORDER BY last_po_date DESC
+        """
+    params = tuple(sibling_items) + tuple(sibling_items) + (cutoff,)
+    rows = frappe.db.sql(sql, params, as_dict=True)
+    return _suppliers_from_po_rows(rows, "rm_group_history", rm_group=rm_group)
+
+
+@frappe.whitelist()
+def get_past_suppliers_for_item(item_code, lookback_months=18):
+    """Returns suppliers with two-tier fallback.
+
+    1. Suppliers who supplied this specific item in the last N months (source=item_history).
+    2. If empty: suppliers who supplied other items in the same ERPNext Item Group
+       mapped to a PEPL RM Group (source=rm_group_history).
+    """
+    if not item_code:
+        frappe.throw(_("Item code required"))
+
+    months = int(lookback_months) or 18
+    cutoff = add_months(getdate(today()), -months)
+
+    tier_1 = _tier1_suppliers_for_item(item_code, cutoff)
+    if tier_1:
+        return {"suppliers": tier_1}
+
+    tier_2 = _tier2_suppliers_by_rm_group_item_family(item_code, cutoff)
+    return {"suppliers": tier_2}
 
 
 @frappe.whitelist()

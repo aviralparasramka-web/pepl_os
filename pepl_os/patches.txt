@@ -14,3 +14,5 @@ pepl_os.pepl_os.patches.add_cst_rate_source_field
 pepl_os.pepl_os.patches.backfill_purchase_trackers
 pepl_os.pepl_os.patches.make_cst_customer_editable
 pepl_os.pepl_os.patches.add_cst_input_rate_per_unit_field
+pepl_os.pepl_os.patches.add_cst_item_name_display
+pepl_os.pepl_os.patches.ensure_cst_cost_fields_editable
