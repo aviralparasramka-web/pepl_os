@@ -435,6 +435,61 @@ def _cst_has_priced_component_lines(cst):
 
 
 @frappe.whitelist()
+def apply_manual_rate(cst_name, row_idx, manual_rate):
+    """Server-side authoritative rate × qty calculation. Bypasses client-side grid binding issues."""
+
+    if not cst_name:
+        frappe.throw(_("CST name required"))
+
+    cst = frappe.get_doc("PEPL CST Cost Sheet", cst_name)
+
+    try:
+        row_idx_int = int(row_idx)
+    except (TypeError, ValueError):
+        frappe.throw(_("Invalid row position"))
+
+    if row_idx_int < 1:
+        frappe.throw(_("Invalid row position"))
+
+    target_row = None
+    for row in cst.components or []:
+        if row.idx == row_idx_int:
+            target_row = row
+            break
+
+    if not target_row:
+        frappe.throw(_("Component row at position {0} not found").format(row_idx_int))
+
+    qty_per_asm = flt(target_row.quantity_per_assembly) or 1.0
+    manual_rate_flt = flt(manual_rate)
+    if manual_rate_flt <= 0:
+        frappe.throw(_("Please enter a valid Manual Rate"))
+
+    computed_amount = manual_rate_flt * qty_per_asm
+
+    is_bought_out = (target_row.manufactured_or_bought_out or "").strip() == "Bought Out"
+    target_field = "bought_out_cost" if is_bought_out else "raw_material_cost"
+
+    setattr(target_row, target_field, computed_amount)
+    target_row.rate_source = (
+        f"Manual: ₹{manual_rate_flt:.2f} × {qty_per_asm:g} = ₹{computed_amount:.2f}"
+    )
+
+    cst.save(ignore_permissions=False)
+
+    return {
+        "success": True,
+        "row_idx": row_idx_int,
+        "item_name": target_row.component_item,
+        "target_field": target_field,
+        "qty_per_assembly": qty_per_asm,
+        "manual_rate": manual_rate_flt,
+        "computed_amount": computed_amount,
+        "rate_source": target_row.rate_source,
+    }
+
+
+@frappe.whitelist()
 def create_quotation_from_cst(cst_name, override_customer=None):
     """Draft Quotation from CST linked customer and item."""
     if not cst_name:

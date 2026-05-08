@@ -28,32 +28,6 @@ frappe.ui.form.on('PEPL CST Cost Sheet', {
 	},
 });
 
-frappe.ui.form.on('PEPL CST Component', {
-	component_item(frm, cdt, cdn) {
-		frappe.after_ajax(() => {
-			const row = locals[cdt][cdn];
-			if (!row || !row.component_item) return;
-			if (pepl_row_cost_blank(row)) {
-				pepl_open_rate_reference_dialog(frm, cdt, cdn);
-			}
-		});
-	},
-	manufactured_or_bought_out(frm, cdt, cdn) {
-		const row = locals[cdt][cdn];
-		if (row && row.component_item && pepl_row_cost_blank(row)) {
-			pepl_open_rate_reference_dialog(frm, cdt, cdn);
-		}
-	},
-});
-
-function pepl_row_cost_blank(row) {
-	const mo = row.manufactured_or_bought_out || 'Manufactured';
-	if (mo === 'Bought Out') {
-		return !flt(row.bought_out_cost);
-	}
-	return !flt(row.raw_material_cost);
-}
-
 function pepl_cst_component_row_has_cost(row) {
 	if (!row) return false;
 	if (flt(row.component_subtotal) > 0) return true;
@@ -71,18 +45,6 @@ function pepl_cst_has_component_with_cost(doc) {
 	const rows = doc.components || [];
 	if (!rows.length) return false;
 	return rows.some((r) => pepl_cst_component_row_has_cost(r));
-}
-
-function pepl_quantity_per_assembly_from_row(frm, cdt, cdn) {
-	const row = locals[cdt][cdn];
-	let q = row && row.quantity_per_assembly;
-	const grid = frm.fields_dict.components && frm.fields_dict.components.grid;
-	const gr = grid && grid.grid_rows_by_docname && grid.grid_rows_by_docname[cdn];
-	if (gr && gr.doc && gr.doc.quantity_per_assembly != null && gr.doc.quantity_per_assembly !== '') {
-		q = gr.doc.quantity_per_assembly;
-	}
-	const n = flt(q);
-	return n > 0 ? n : 1;
 }
 
 function pepl_call_create_quotation_from_cst(frm, override_customer) {
@@ -358,8 +320,6 @@ function pepl_open_rate_reference_dialog(frm, cdt, cdn) {
 		callback(r) {
 			const refs = (r.message && r.message.references) || [];
 			const mo = row.manufactured_or_bought_out || 'Manufactured';
-			const targetLabel =
-				mo === 'Bought Out' ? __('Bought Out Cost') : __('Raw Material Cost');
 			const qpa = flt(row.quantity_per_assembly) || 1;
 			const avail = refs.filter((x) => x.available);
 			let defaultManual = 0;
@@ -381,8 +341,7 @@ function pepl_open_rate_reference_dialog(frm, cdt, cdn) {
 						options:
 							'<p class="text-muted small">' +
 							__(
-								'Manual Rate will be applied to: <strong>{0}</strong> (per-unit rate × quantity per assembly = {1}).',
-								[targetLabel, qpa]
+								'Enter PER-UNIT rate. Server will multiply by this row\'s quantity_per_assembly and write to raw_material_cost or bought_out_cost based on the row\'s classification. Document will save and refresh.'
 							) +
 							'</p>' +
 							pepl_build_refs_table_html(refs),
@@ -395,50 +354,63 @@ function pepl_open_rate_reference_dialog(frm, cdt, cdn) {
 					},
 				],
 				primary_action_label: __('Apply'),
-				primary_action() {
-					const manual_rate = flt(dialog.get_value('manual_rate'));
-					const row = locals[cdt][cdn];
-					const qty_per_asm = pepl_quantity_per_assembly_from_row(frm, cdt, cdn);
-					const computed_amount = flt(manual_rate * qty_per_asm);
-
-					console.log(
-						'[Rate Ref] manual_rate=',
-						manual_rate,
-						'qty_per_asm=',
-						qty_per_asm,
-						'computed=',
-						computed_amount,
-						'row=',
-						row
+				primary_action(values) {
+					const manual_rate = flt(
+						values && values.manual_rate != null ? values.manual_rate : dialog.get_value('manual_rate')
 					);
-
-					if (!manual_rate && !computed_amount) {
-						frappe.msgprint(__('Enter a manual rate.'));
+					if (!manual_rate || manual_rate <= 0) {
+						frappe.msgprint(__('Please enter a valid Manual Rate'));
 						return;
 					}
 
-					const is_bought_out = row.manufactured_or_bought_out === 'Bought Out';
-					const target_field = is_bought_out ? 'bought_out_cost' : 'raw_material_cost';
-					console.log('[Rate Ref] writing', computed_amount, 'to', target_field);
+					const row_idx = locals[cdt][cdn].idx;
+					if (!row_idx) {
+						frappe.msgprint({
+							title: __('Rate Reference'),
+							message: __('Save the Cost Sheet first so component rows have a stable position.'),
+							indicator: 'orange',
+						});
+						return;
+					}
 
-					const rate_source_str =
-						'Manual: ₹' +
-						manual_rate.toFixed(2) +
-						' × ' +
-						qty_per_asm +
-						' = ₹' +
-						computed_amount.toFixed(2);
+					const save_promise = frm.is_dirty() ? frm.save() : Promise.resolve();
 
-					frappe.model.set_value(cdt, cdn, target_field, computed_amount);
-					frappe.model.set_value(cdt, cdn, 'rate_source', rate_source_str);
-					frappe.after_ajax(() => {
-						frm.refresh_field('components');
-						if (typeof calculate_subtotal === 'function') {
-							calculate_subtotal(frm, cdt, cdn);
-						}
-						dialog.hide();
-						frappe.show_alert({ message: __('Rate applied'), indicator: 'green' });
-					});
+					save_promise
+						.then(() => {
+							return frappe.call({
+								method: 'pepl_os.pepl_os.api.cst_intelligence.apply_manual_rate',
+								args: {
+									cst_name: frm.doc.name,
+									row_idx: row_idx,
+									manual_rate: manual_rate,
+								},
+								freeze: true,
+								freeze_message: __('Applying rate...'),
+							});
+						})
+						.then((r) => {
+							if (r && r.message && r.message.success) {
+								const msg = r.message;
+								frappe.show_alert({
+									message: __('Wrote ₹{0} to {1} ({2} × {3})', [
+										msg.computed_amount.toFixed(2),
+										msg.target_field,
+										msg.manual_rate,
+										msg.qty_per_assembly,
+									]),
+									indicator: 'green',
+								});
+								dialog.hide();
+								return frm.reload_doc();
+							}
+						})
+						.catch((err) => {
+							frappe.msgprint({
+								title: __('Could not apply rate'),
+								message: err.message || JSON.stringify(err),
+								indicator: 'red',
+							});
+						});
 				},
 			});
 
