@@ -1,0 +1,27 @@
+{
+ "add_total_row": 0,
+ "creation": "2026-05-08 12:00:00",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [
+  {"fieldname": "supplier", "fieldtype": "MultiSelectList", "label": "Supplier", "options": "Supplier"},
+  {"fieldname": "msme_only", "fieldtype": "Check", "label": "MSME suppliers only", "default": 0},
+  {"fieldname": "msme_bucket", "fieldtype": "MultiSelectList", "label": "MSME Compliance Bucket", "options": "Within 45 days\nApproaching 45 days\nOVERDUE — legal exposure"}
+ ],
+ "is_standard": "Yes",
+ "modified": "2026-05-08 12:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "Outstanding Vendor Bills",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Purchase Invoice",
+ "report_name": "Outstanding Vendor Bills",
+ "report_type": "Script Report",
+ "roles": [
+  {"role": "System Manager"},
+  {"role": "Accounts Manager"},
+  {"role": "Purchase Manager"}
+ ]
+}

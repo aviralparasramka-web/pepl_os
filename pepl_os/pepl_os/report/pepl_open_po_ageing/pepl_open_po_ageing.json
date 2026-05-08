@@ -1,0 +1,29 @@
+{
+ "add_total_row": 0,
+ "creation": "2026-05-08 12:00:00",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [
+  {"fieldname": "from_date", "fieldtype": "Date", "label": "From Date"},
+  {"fieldname": "to_date", "fieldtype": "Date", "label": "To Date"},
+  {"fieldname": "supplier", "fieldtype": "MultiSelectList", "label": "Supplier", "options": "Supplier"},
+  {"fieldname": "current_status", "fieldtype": "MultiSelectList", "label": "Current Status", "options": "PO Sent\nAcknowledged\nMaterial Dispatched\nReceived\nInspected - Pass\nInspected - Fail\nClosed"},
+  {"fieldname": "ageing_bucket", "fieldtype": "MultiSelectList", "label": "Ageing Bucket", "options": "0-7 days\n8-15 days\n16-30 days\n30+ days\nClosed"}
+ ],
+ "is_standard": "Yes",
+ "modified": "2026-05-08 12:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "Open PO Ageing",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Purchase Order",
+ "report_name": "Open PO Ageing",
+ "report_type": "Script Report",
+ "roles": [
+  {"role": "System Manager"},
+  {"role": "Purchase Manager"},
+  {"role": "Purchase User"}
+ ]
+}

@@ -457,14 +457,14 @@ function pepl_open_vendor_rfq_dialog(frm, item_code, defaultQty) {
 		return;
 	}
 	frappe.call({
-		method: 'pepl_os.pepl_os.api.cst_intelligence.get_past_suppliers_for_item',
+		method: 'pepl_os.pepl_os.api.cst_intelligence.get_qualified_vendors_for_item',
 		args: { item_code, lookback_months: 18 },
 		callback(r) {
 			const suppliers = (r.message && r.message.suppliers) || [];
 			if (!suppliers.length) {
 				frappe.msgprint(
 					__(
-						'No suppliers found for this item or other items in its RM Group (mapped Item Group) in the last 18 months.'
+						'No qualified vendors found (approved RM coverage or PO history) for this item.'
 					)
 				);
 				return;
@@ -472,15 +472,22 @@ function pepl_open_vendor_rfq_dialog(frm, item_code, defaultQty) {
 			let checksHtml = '';
 			for (const s of suppliers) {
 				let sourceLine = '';
-				if (s.source === 'item_history') {
+				let srcClass = 'text-muted small';
+				if (s.source === 'approved_specific_item') {
 					sourceLine =
-						' <span class="text-muted small">(' + __('via item history') + ')</span>';
-				} else if (s.source === 'rm_group_history') {
+						' <span class="small text-success">(' + __('Approved (specific item)') + ')</span>';
+					srcClass = 'small text-success';
+				} else if (s.source === 'approved_rm_group') {
 					const rg = s.rm_group ? frappe.utils.escape_html(String(s.rm_group)) : '—';
 					sourceLine =
-						' <span class="text-muted small">(' +
-						__('via RM Group {0}', [rg]) +
+						' <span class="small text-success">(' +
+						__('Approved (via RM Group {0})', [rg]) +
 						')</span>';
+					srcClass = 'small text-success';
+				} else if (s.source === 'po_history') {
+					sourceLine =
+						' <span class="small text-warning">(' + __('Past supplier (no formal approval yet)') + ')</span>';
+					srcClass = 'small text-warning';
 				}
 				checksHtml +=
 					'<div class="checkbox"><label>' +
@@ -489,7 +496,9 @@ function pepl_open_vendor_rfq_dialog(frm, item_code, defaultQty) {
 					'" /> ' +
 					frappe.utils.escape_html(s.supplier_name || s.supplier) +
 					sourceLine +
-					'<br/><span class="text-muted small">' +
+					'<br/><span class="' +
+					srcClass +
+					'">' +
 					__('Last PO') +
 					': ' +
 					frappe.utils.escape_html(s.last_po_date || '—') +
@@ -497,6 +506,12 @@ function pepl_open_vendor_rfq_dialog(frm, item_code, defaultQty) {
 					__('Rate') +
 					': ' +
 					frappe.utils.escape_html(String(s.last_rate != null ? s.last_rate : '—')) +
+					(s.approval_status
+						? ' · ' +
+						  __('Approval') +
+						  ': ' +
+						  frappe.utils.escape_html(String(s.approval_status))
+						: '') +
 					'</span></label></div>';
 			}
 

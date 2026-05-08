@@ -16,3 +16,8 @@ pepl_os.pepl_os.patches.make_cst_customer_editable
 pepl_os.pepl_os.patches.add_cst_input_rate_per_unit_field
 pepl_os.pepl_os.patches.add_cst_item_name_display
 pepl_os.pepl_os.patches.ensure_cst_cost_fields_editable
+pepl_os.pepl_os.patches.restructure_item_groups_v2
+pepl_os.pepl_os.patches.add_rm_group_parent_category_field
+pepl_os.pepl_os.patches.add_supplier_rm_coverage_table
+pepl_os.pepl_os.patches.repopulate_rm_groups_v2
+pepl_os.pepl_os.patches.backfill_supplier_rm_coverage

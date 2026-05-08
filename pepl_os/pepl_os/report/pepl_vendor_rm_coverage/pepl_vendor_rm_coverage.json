@@ -1,0 +1,28 @@
+{
+ "add_total_row": 0,
+ "creation": "2026-05-08 12:00:00",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [
+  {"fieldname": "view_as", "fieldtype": "Select", "label": "View", "options": "Vendor\nRM Group\nCoverage Gaps", "default": "Vendor"},
+  {"fieldname": "rm_group", "fieldtype": "Link", "label": "RM Group", "options": "PEPL RM Group"},
+  {"fieldname": "supplier", "fieldtype": "Link", "label": "Supplier", "options": "Supplier"},
+  {"fieldname": "approval_status", "fieldtype": "Select", "label": "Approval Status", "options": "\nPending\nApproved (Documents Pending)\nApproved\nExpired\nTemporary Suspended\nPermanent Suspended"}
+ ],
+ "is_standard": "Yes",
+ "modified": "2026-05-08 12:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "Vendor RM Coverage",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "PEPL Supplier Approval",
+ "report_name": "Vendor RM Coverage",
+ "report_type": "Script Report",
+ "roles": [
+  {"role": "System Manager"},
+  {"role": "Purchase Manager"},
+  {"role": "Purchase User"}
+ ]
+}

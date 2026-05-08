@@ -41,7 +41,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Material Base",
-   "options": "Brass\nSteel\nAluminium\nCopper\nPlastic\nHardware and Fasteners\nBought-out Components\nForgings\nCastings\nProcess Service\nOther",
+   "options": "Brass\nSteel\nAluminium\nCopper\nPlastic-Rubber\nPackaging\nBought Out\nHardware\nForgings\nCastings\nPlastic\nHardware and Fasteners\nBought-out Components\nProcess Service\nIT Hardware\nElectrical\nConsumable\nTooling\nTool\nCapital\nInspection\nOther",
    "reqd": 1
   },
   {

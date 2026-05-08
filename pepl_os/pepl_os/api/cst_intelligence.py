@@ -385,6 +385,164 @@ def get_past_suppliers_for_item(item_code, lookback_months=18):
     return {"suppliers": tier_2}
 
 
+def _coverage_specific_item_codes(row):
+    """Normalize Table MultiSelect / stored Item references on RM Coverage row."""
+    val = getattr(row, "specific_items", None)
+    if not val:
+        return []
+    if isinstance(val, str):
+        parts = val.replace(",", "\n").split("\n")
+        return [p.strip() for p in parts if p.strip()]
+    out = []
+    for x in val:
+        if isinstance(x, dict):
+            code = x.get("item_code") or x.get("item") or x.get("name")
+            if code:
+                out.append(code)
+        elif isinstance(x, str):
+            out.append(x)
+    return out
+
+
+def _rm_group_for_item_code(item_code):
+    ig = frappe.db.get_value("Item", item_code, "item_group")
+    if not ig:
+        return None
+    return frappe.db.get_value("PEPL RM Group", {"linked_item_group": ig}, "name")
+
+
+def _supplier_result_row(supplier, source, rm_group=None, last_po_date=None, last_rate=None, approval_status=None):
+    return {
+        "supplier": supplier,
+        "supplier_name": frappe.db.get_value("Supplier", supplier, "supplier_name") or supplier,
+        "source": source,
+        "rm_group": rm_group,
+        "last_po_date": last_po_date,
+        "last_rate": last_rate,
+        "approval_status": approval_status,
+    }
+
+
+@frappe.whitelist()
+def get_qualified_vendors_for_item(item_code, lookback_months=18):
+    """3-tier supplier discovery: approved specific item, approved RM group, PO history."""
+    if not item_code:
+        frappe.throw(_("Item code required"))
+
+    months = int(lookback_months) or 18
+    cutoff = add_months(getdate(today()), -months)
+
+    best = {}
+
+    def put(rank, row):
+        sup = row.get("supplier")
+        if not sup:
+            return
+        prev = best.get(sup)
+        if prev and prev["_rank"] <= rank:
+            return
+        row["_rank"] = rank
+        best[sup] = row
+
+    for sa_name in frappe.get_all(
+        "PEPL Supplier Approval",
+        filters={"approval_status": "Approved"},
+        pluck="name",
+    ):
+        doc = frappe.get_doc("PEPL Supplier Approval", sa_name)
+        sup = doc.linked_supplier
+        if not sup:
+            continue
+        for cov in doc.rm_coverage or []:
+            codes = _coverage_specific_item_codes(cov)
+            if item_code in codes:
+                put(
+                    1,
+                    _supplier_result_row(
+                        sup,
+                        "approved_specific_item",
+                        rm_group=cov.rm_group,
+                        approval_status=doc.approval_status,
+                    ),
+                )
+
+    rm = _rm_group_for_item_code(item_code)
+    if rm:
+        for sa_name in frappe.get_all(
+            "PEPL Supplier Approval",
+            filters={"approval_status": "Approved"},
+            pluck="name",
+        ):
+            doc = frappe.get_doc("PEPL Supplier Approval", sa_name)
+            sup = doc.linked_supplier
+            if not sup or sup in best:
+                continue
+            for cov in doc.rm_coverage or []:
+                if cov.rm_group != rm:
+                    continue
+                if _coverage_specific_item_codes(cov):
+                    continue
+                put(
+                    2,
+                    _supplier_result_row(
+                        sup,
+                        "approved_rm_group",
+                        rm_group=cov.rm_group,
+                        approval_status=doc.approval_status,
+                    ),
+                )
+                break
+
+    for s in _tier1_suppliers_for_item(item_code, cutoff):
+        sup = s.get("supplier")
+        if not sup or sup in best:
+            continue
+        put(
+            3,
+            _supplier_result_row(
+                sup,
+                "po_history",
+                rm_group=s.get("rm_group"),
+                last_po_date=s.get("last_po_date"),
+                last_rate=s.get("last_rate"),
+                approval_status=None,
+            ),
+        )
+
+    for s in _tier2_suppliers_by_rm_group_item_family(item_code, cutoff):
+        sup = s.get("supplier")
+        if not sup or sup in best:
+            continue
+        put(
+            3,
+            _supplier_result_row(
+                sup,
+                "po_history",
+                rm_group=s.get("rm_group"),
+                last_po_date=s.get("last_po_date"),
+                last_rate=s.get("last_rate"),
+                approval_status=None,
+            ),
+        )
+
+    suppliers = []
+    for sup in sorted(best.keys()):
+        row = dict(best[sup])
+        row.pop("_rank", None)
+        suppliers.append(row)
+
+    tier_1_count = sum(1 for r in suppliers if r["source"] == "approved_specific_item")
+    tier_2_count = sum(1 for r in suppliers if r["source"] == "approved_rm_group")
+    tier_3_count = sum(1 for r in suppliers if r["source"] == "po_history")
+
+    return {
+        "suppliers": suppliers,
+        "tier_1_count": tier_1_count,
+        "tier_2_count": tier_2_count,
+        "tier_3_count": tier_3_count,
+    }
+
+
 @frappe.whitelist()
 def send_rfq_email_to_suppliers(
     item_code,

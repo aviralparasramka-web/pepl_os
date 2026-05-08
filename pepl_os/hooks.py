@@ -53,7 +53,10 @@ doc_events = {
     },
     "Purchase Order": {
         "before_submit": "pepl_os.pepl_os.doc_events.purchase_validation.block_po_if_suspended",
-        "on_submit": "pepl_os.pepl_os.doc_events.purchase_order_tracker.create_purchase_tracker_on_submit",
+        "on_submit": [
+            "pepl_os.pepl_os.doc_events.purchase_order_tracker.create_purchase_tracker_on_submit",
+            "pepl_os.pepl_os.doc_events.pepl_purchase_rm_coverage.update_rm_coverage_last_supply",
+        ],
     },
     "Purchase Receipt": {
         "before_submit": "pepl_os.pepl_os.doc_events.purchase_validation.block_pr_if_perm_suspended",
@@ -62,6 +65,9 @@ doc_events = {
     "Purchase Invoice": {
         "before_submit": "pepl_os.pepl_os.doc_events.purchase_validation.block_pi_if_perm_suspended"
     },
+    "Request for Quotation": {
+        "on_submit": "pepl_os.pepl_os.doc_events.request_for_quotation_pepl.log_non_approved_rfq_suppliers",
+    },
 }
 
 doctype_js = {
@@ -69,6 +75,7 @@ doctype_js = {
     "PEPL Tender": "public/js/tender_bid_readiness.js",
     "Sales Order": "public/js/sales_order_product_readiness.js",
     "PEPL CST Cost Sheet": "public/js/cst_cost_sheet_intelligence.js",
+    "Request for Quotation": "public/js/request_for_quotation_pepl.js",
 }
 
 page_js = {}

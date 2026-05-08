@@ -1,0 +1,68 @@
+{
+ "actions": [],
+ "creation": "2026-05-08 12:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "rm_group",
+  "specific_items",
+  "since_date",
+  "rate_card_attached",
+  "last_supply_date",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "rm_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "RM Group",
+   "options": "PEPL RM Group",
+   "reqd": 1
+  },
+  {
+   "description": "Optional: restrict coverage to these items in the RM Group. Leave empty to cover all items in the group.",
+   "fieldname": "specific_items",
+   "fieldtype": "Table MultiSelect",
+   "label": "Specific Items",
+   "options": "Item"
+  },
+  {
+   "default": "Today",
+   "fieldname": "since_date",
+   "fieldtype": "Date",
+   "label": "Since Date"
+  },
+  {
+   "default": "0",
+   "fieldname": "rate_card_attached",
+   "fieldtype": "Check",
+   "label": "Rate Card Attached"
+  },
+  {
+   "fieldname": "last_supply_date",
+   "fieldtype": "Date",
+   "label": "Last Supply Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-05-08 12:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "PEPL Supplier RM Coverage",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "rm_group",
+ "sort_order": "ASC",
+ "states": [],
+ "track_changes": 1
+}
