@@ -1,0 +1,81 @@
+{
+ "actions": [],
+ "creation": "2026-05-09 12:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "rfq_item_idx",
+  "rfq_item_code",
+  "vendor",
+  "is_qualified",
+  "source",
+  "is_selected",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "rfq_item_idx",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "RFQ Item Row",
+   "reqd": 1
+  },
+  {
+   "fieldname": "rfq_item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "vendor",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Vendor",
+   "options": "Supplier",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "description": "Cleared when vendor was added manually (not from qualified list)",
+   "fieldname": "is_qualified",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Qualified"
+  },
+  {
+   "description": "Item History / RM Group Match / PO History / Manual Override",
+   "fieldname": "source",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Source"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_selected",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Selected"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-05-09 12:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "PEPL RFQ Item Vendor Selection",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

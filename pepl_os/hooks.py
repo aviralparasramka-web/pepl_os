@@ -75,7 +75,14 @@ doctype_js = {
     "PEPL Tender": "public/js/tender_bid_readiness.js",
     "Sales Order": "public/js/sales_order_product_readiness.js",
     "PEPL CST Cost Sheet": "public/js/cst_cost_sheet_intelligence.js",
-    "Request for Quotation": "public/js/request_for_quotation_pepl.js",
+    "Request for Quotation": [
+        "public/js/request_for_quotation_pepl.js",
+        "public/js/request_for_quotation_phase2.js",
+    ],
 }
 
 page_js = {}
+
+override_doctype_class = {
+    "Request for Quotation": "pepl_os.pepl_os.overrides.request_for_quotation.PeplRequestForQuotation",
+}
