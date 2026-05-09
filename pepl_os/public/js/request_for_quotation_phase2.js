@@ -1,16 +1,20 @@
 // Copyright (c) 2026, Parasramka Engineering Pvt. Ltd. and contributors
+//
+// RFQ Phase 2 — per-item target_vendors (Table MultiSelect on RFQ Item).
+// Guard: checks for target_vendors field on "Request for Quotation Item".
 
 frappe.ui.form.on('Request for Quotation', {
 	refresh: function (frm) {
-		if (!frappe.meta.get_docfield('Request for Quotation', 'per_item_vendor_selections')) {
+		if (!frappe.meta.get_docfield('Request for Quotation Item', 'target_vendors')) {
 			return;
 		}
 
-		var has_codes = (frm.doc.items || []).some(function (r) { return !!r.item_code; });
+		var has_items = (frm.doc.items || []).some(function (r) { return !!r.item_code; });
 
+		// "Configure Vendors per Item" button — available on saved, clean draft
 		if (
 			frm.doc.docstatus === 0 &&
-			has_codes &&
+			has_items &&
 			!frm.doc.__islocal &&
 			frm.doc.name &&
 			!frm.is_dirty()
@@ -23,14 +27,27 @@ frappe.ui.form.on('Request for Quotation', {
 			);
 		}
 
-		if (
-			frm.doc.docstatus === 1 &&
-			(frm.doc.per_item_vendor_selections || []).length > 0
-		) {
+		// "Send RFQ to Vendors" button — replaces standard send on submitted docs
+		// that have any target_vendors configured
+		if (frm.doc.docstatus === 1 && pepl_rfq2_has_selections(frm)) {
 			pepl_rfq2_install_send_btn(frm);
 		}
 	}
 });
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+function pepl_rfq2_h(s) {
+	return frappe.utils.escape_html(String(s == null ? '' : s));
+}
+
+function pepl_rfq2_has_selections(frm) {
+	return (frm.doc.items || []).some(function (it) {
+		return it.item_code && (it.target_vendors || []).length > 0;
+	});
+}
+
+// ── Send button ────────────────────────────────────────────────────────────
 
 function pepl_rfq2_install_send_btn(frm) {
 	frappe.after_ajax(function () {
@@ -48,7 +65,7 @@ function pepl_rfq2_install_send_btn(frm) {
 
 function pepl_rfq2_send(frm) {
 	frappe.confirm(
-		__('Send per-item RFQ emails to all selected vendors?'),
+		__('Send per-item RFQ emails to all target vendors?'),
 		function () {
 			frappe.call({
 				method: 'pepl_os.pepl_os.api.rfq_phase2.send_rfq_emails_phase2',
@@ -60,16 +77,14 @@ function pepl_rfq2_send(frm) {
 					if (lines.length) {
 						frappe.msgprint(
 							'<ul style="margin-left:14px"><li>' +
-							lines.map(function (s) { return frappe.utils.escape_html(s); }).join('</li><li>') +
+							lines.map(function (s) { return pepl_rfq2_h(s); }).join('</li><li>') +
 							'</li></ul>'
 						);
 					}
 					if ((data.skipped || []).length) {
 						frappe.msgprint({
 							title: __('Vendors skipped — no email on record'),
-							message: (data.skipped || []).map(function (s) {
-								return frappe.utils.escape_html(s);
-							}).join(', '),
+							message: data.skipped.map(pepl_rfq2_h).join(', '),
 							indicator: 'orange'
 						});
 					}
@@ -83,9 +98,7 @@ function pepl_rfq2_send(frm) {
 	);
 }
 
-function pepl_rfq2_h(s) {
-	return frappe.utils.escape_html(String(s == null ? '' : s));
-}
+// ── Dialog open ────────────────────────────────────────────────────────────
 
 function pepl_rfq2_open(frm) {
 	if (frm.is_dirty() || frm.doc.__islocal || !frm.doc.name) {
@@ -94,126 +107,113 @@ function pepl_rfq2_open(frm) {
 	}
 
 	frappe.call({
-		method: 'pepl_os.pepl_os.api.rfq_phase2.populate_per_item_vendors',
+		method: 'pepl_os.pepl_os.api.rfq_phase2.get_qualified_vendors_per_item',
 		args: { rfq_name: frm.doc.name },
 		freeze: true,
-		callback: function () {
-			frappe.call({
-				method: 'pepl_os.pepl_os.api.rfq_phase2.get_per_item_qualified_vendors',
-				args: { rfq_name: frm.doc.name },
-				freeze: true,
-				callback: function (r2) {
-					var items = (r2.message && r2.message.items) || [];
-					if (!items.length) {
-						frappe.msgprint(__('No RFQ items with Item Code found.'));
-						return;
-					}
-					pepl_rfq2_build_dialog(frm, items);
-				},
-				error: function () {
-					frappe.msgprint(__('Could not load qualified vendors for display.'));
-				}
-			});
+		callback: function (r) {
+			var items = (r.message && r.message.items) || [];
+			if (!items.length) {
+				frappe.msgprint(__('No RFQ items with Item Code found.'));
+				return;
+			}
+			pepl_rfq2_build_dialog(frm, items);
 		},
 		error: function () {
-			frappe.msgprint(__('Could not populate per-item vendors.'));
+			frappe.msgprint(__('Could not load qualified vendors.'));
 		}
 	});
 }
 
-function pepl_rfq2_sel_lookup(frm, idx, ic, vendor) {
-	var rows = frm.doc.per_item_vendor_selections || [];
-	for (var i = 0; i < rows.length; i++) {
-		var r = rows[i];
-		if (
-			String(r.rfq_item_idx) === String(idx) &&
-			r.rfq_item_code === ic &&
-			r.vendor === vendor &&
-			cint(r.is_qualified) === 1
-		) {
-			return cint(r.is_selected) ? true : false;
-		}
-	}
-	return true;
-}
+// ── Dialog builder ─────────────────────────────────────────────────────────
 
 function pepl_rfq2_build_dialog(frm, items) {
 	var html = '<p class="text-muted small">' +
-		pepl_rfq2_h(__('One email per vendor. Each vendor receives only the items checked for them.')) +
+		pepl_rfq2_h(__('One email per vendor. Each vendor receives only the items it is checked for.')) +
 		'</p>';
 
 	items.forEach(function (bucket) {
-		var idx = bucket.rfq_item_idx;
+		var item_idx = bucket.rfq_item_idx;
 		var ic = bucket.item_code;
 
-		var q_rows = '';
-		(bucket.qualified_vendors || []).forEach(function (v) {
-			var prior_sel = pepl_rfq2_sel_lookup(frm, idx, ic, v.vendor);
-			var checked = (prior_sel !== false) ? 'checked' : '';
-			q_rows +=
-				'<tr>' +
-				'<td style="width:40px;text-align:center">' +
-				'<input type="checkbox" class="pepl-rfq2-qcb" ' + checked +
-				' data-item-idx="' + pepl_rfq2_h(idx) + '"' +
-				' data-item-code="' + pepl_rfq2_h(ic) + '"' +
-				' data-vendor="' + pepl_rfq2_h(v.vendor) + '"' +
-				' data-source="' + pepl_rfq2_h(v.source || '') + '"' +
-				' /></td>' +
-				'<td>' + pepl_rfq2_h(v.vendor_name || v.vendor) + '</td>' +
-				'<td>' + pepl_rfq2_h(v.source || '') + '</td>' +
-				'</tr>';
-		});
+		// Build a set of all tier suppliers so manual rows can exclude them
+		var tier_suppliers = {};
+		function note_tier(list, tier) {
+			(list || []).forEach(function (v) { if (v.supplier) tier_suppliers[v.supplier] = tier; });
+		}
+		note_tier(bucket.tier1, 1);
+		note_tier(bucket.tier2, 2);
+		note_tier(bucket.tier3, 3);
 
-		var m_rows = '';
-		(frm.doc.per_item_vendor_selections || []).forEach(function (r) {
-			if (String(r.rfq_item_idx) !== String(idx)) return;
-			if (r.rfq_item_code !== ic) return;
-			if (cint(r.is_qualified) !== 0) return;
-			var checked_m = cint(r.is_selected) ? 'checked' : '';
-			var vesc = pepl_rfq2_h(r.vendor);
-			m_rows +=
+		var current = {};
+		(bucket.current_vendors || []).forEach(function (s) { current[s] = true; });
+
+		// Tier-1 rows (Approved — specific item): checked by default or if in current
+		var t1_rows = pepl_rfq2_vendor_rows(
+			bucket.tier1 || [], item_idx, ic, current, true,
+			'pepl-rfq2-t1cb', 'success', __('Tier 1 — Approved (Item)')
+		);
+
+		// Tier-2 rows (Approved — RM group): unchecked by default unless in current
+		var t2_rows = pepl_rfq2_vendor_rows(
+			bucket.tier2 || [], item_idx, ic, current, false,
+			'pepl-rfq2-t2cb', 'info', __('Tier 2 — Approved (RM Group)')
+		);
+
+		// Tier-3 rows (PO history, no formal approval): unchecked by default
+		var t3_rows = pepl_rfq2_vendor_rows(
+			bucket.tier3 || [], item_idx, ic, current, false,
+			'pepl-rfq2-t3cb', 'warning', __('Tier 3 — PO History')
+		);
+
+		// Manual rows: current_vendors that are NOT in any tier
+		var manual_html = '';
+		(bucket.current_vendors || []).forEach(function (sup) {
+			if (tier_suppliers[sup]) return; // Already shown in a tier table
+			var vesc = pepl_rfq2_h(sup);
+			manual_html +=
 				'<tr>' +
 				'<td style="width:40px;text-align:center">' +
-				'<input type="checkbox" class="pepl-rfq2-mcb" ' + checked_m +
-				' data-item-idx="' + pepl_rfq2_h(idx) + '"' +
+				'<input type="checkbox" class="pepl-rfq2-mcb" checked' +
+				' data-item-idx="' + pepl_rfq2_h(item_idx) + '"' +
 				' data-item-code="' + pepl_rfq2_h(ic) + '"' +
-				' data-vendor="' + vesc + '"' +
-				' /></td>' +
+				' data-vendor="' + vesc + '" /></td>' +
 				'<td>' + vesc + ' <span class="badge badge-warning">M</span></td>' +
 				'</tr>';
 		});
-
-		var m_vis = m_rows ? '' : 'display:none;';
+		var manual_vis = manual_html ? '' : 'display:none;';
 
 		html += '<div class="pepl-rfq2-block"' +
-			' data-item-idx="' + pepl_rfq2_h(idx) + '"' +
+			' data-item-idx="' + pepl_rfq2_h(item_idx) + '"' +
 			' data-item-code="' + pepl_rfq2_h(ic) + '"' +
-			' style="margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #eee">';
+			' style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #eee">';
 
-		html += '<h6 style="margin:8px 0 4px">' +
-			pepl_rfq2_h(ic) + ' &mdash; ' + pepl_rfq2_h(bucket.item_name) +
-			'</h6>';
+		html += '<h6 style="margin:8px 0 6px">' +
+			pepl_rfq2_h(ic) + ' &mdash; ' + pepl_rfq2_h(bucket.item_name) + '</h6>';
 
-		html += '<div class="text-muted small">' + pepl_rfq2_h(__('Qualified vendors')) + '</div>';
-		html +=
-			'<table class="table table-bordered table-condensed" style="margin-bottom:6px">' +
-			'<thead><tr>' +
-			'<th style="width:40px"></th>' +
-			'<th>' + pepl_rfq2_h(__('Vendor')) + '</th>' +
-			'<th>' + pepl_rfq2_h(__('Source')) + '</th>' +
-			'</tr></thead><tbody>' +
-			(q_rows || '<tr><td colspan="3"><i class="text-muted">' + pepl_rfq2_h(__('None found')) + '</i></td></tr>') +
-			'</tbody></table>';
+		// Tier 1
+		if (t1_rows) {
+			html += pepl_rfq2_tier_table(t1_rows, __('Tier 1 — Approved (Item History)'));
+		}
+		// Tier 2
+		if (t2_rows) {
+			html += pepl_rfq2_tier_table(t2_rows, __('Tier 2 — Approved (RM Group)'));
+		}
+		// Tier 3
+		if (t3_rows) {
+			html += pepl_rfq2_tier_table(t3_rows, __('Tier 3 — PO History (not formally approved)'));
+		}
+		if (!t1_rows && !t2_rows && !t3_rows) {
+			html += '<p class="text-muted small"><i>' + pepl_rfq2_h(__('No qualified vendors found from 3-tier lookup.')) + '</i></p>';
+		}
 
-		html += '<div class="text-muted small">' + pepl_rfq2_h(__('Manual vendors')) + '</div>';
+		// Manual
+		html += '<div class="text-muted small" style="margin-top:4px">' + pepl_rfq2_h(__('Manual vendors')) + '</div>';
 		html +=
 			'<table class="table table-bordered table-condensed pepl-rfq2-manual"' +
-			' style="margin-bottom:6px;' + m_vis + '">' +
-			'<tbody>' + m_rows + '</tbody></table>';
-		html +=
-			'<button type="button" class="btn btn-xs btn-secondary pepl-rfq2-manual-add">' +
-			pepl_rfq2_h(__('Add Manual Vendor')) +
-			'</button>';
+			' style="margin-bottom:4px;' + manual_vis + '">' +
+			'<tbody>' + manual_html + '</tbody></table>';
+		html += '<button type="button" class="btn btn-xs btn-default pepl-rfq2-manual-add">' +
+			pepl_rfq2_h(__('Add Manual Vendor')) + '</button>';
 
 		html += '</div>';
 	});
@@ -228,26 +228,21 @@ function pepl_rfq2_build_dialog(frm, items) {
 		}
 	});
 
+	// ONE delegated handler for the manual-add button
 	dlg.$wrapper.on('click', '.pepl-rfq2-manual-add', function () {
 		var block = $(this).closest('.pepl-rfq2-block');
 		var tbl = block.find('.pepl-rfq2-manual');
 		frappe.prompt(
-			[{
-				fieldtype: 'Link',
-				options: 'Supplier',
-				fieldname: 'supplier',
-				label: __('Supplier'),
-				reqd: 1
-			}],
+			[{ fieldtype: 'Link', options: 'Supplier', fieldname: 'supplier', label: __('Supplier'), reqd: 1 }],
 			function (vals) {
-				var vesc = frappe.utils.escape_html(vals.supplier);
+				var vesc = pepl_rfq2_h(vals.supplier);
 				tbl.show();
 				tbl.find('tbody').append(
 					'<tr>' +
 					'<td style="width:40px;text-align:center">' +
 					'<input type="checkbox" class="pepl-rfq2-mcb" checked' +
-					' data-item-idx="' + frappe.utils.escape_html(block.attr('data-item-idx')) + '"' +
-					' data-item-code="' + frappe.utils.escape_html(block.attr('data-item-code')) + '"' +
+					' data-item-idx="' + pepl_rfq2_h(block.attr('data-item-idx')) + '"' +
+					' data-item-code="' + pepl_rfq2_h(block.attr('data-item-code')) + '"' +
 					' data-vendor="' + vesc + '" /></td>' +
 					'<td>' + vesc + ' <span class="badge badge-warning">M</span></td>' +
 					'</tr>'
@@ -260,48 +255,78 @@ function pepl_rfq2_build_dialog(frm, items) {
 	dlg.show();
 }
 
+function pepl_rfq2_tier_table(rows_html, label) {
+	return '<div class="text-muted small" style="margin-top:4px">' + pepl_rfq2_h(label) + '</div>' +
+		'<table class="table table-bordered table-condensed" style="margin-bottom:4px">' +
+		'<thead><tr>' +
+		'<th style="width:40px"></th>' +
+		'<th>' + pepl_rfq2_h(__('Vendor')) + '</th>' +
+		'<th>' + pepl_rfq2_h(__('Source')) + '</th>' +
+		'</tr></thead><tbody>' + rows_html + '</tbody></table>';
+}
+
+function pepl_rfq2_vendor_rows(list, item_idx, ic, current, default_checked, cbClass, badge, badge_label) {
+	if (!list.length) return '';
+	var out = '';
+	list.forEach(function (v) {
+		var sup = v.supplier;
+		if (!sup) return;
+		var is_checked = (sup in current) ? current[sup] : default_checked;
+		var checked = is_checked ? 'checked' : '';
+		out +=
+			'<tr>' +
+			'<td style="width:40px;text-align:center">' +
+			'<input type="checkbox" class="' + cbClass + '" ' + checked +
+			' data-item-idx="' + pepl_rfq2_h(item_idx) + '"' +
+			' data-item-code="' + pepl_rfq2_h(ic) + '"' +
+			' data-vendor="' + pepl_rfq2_h(sup) + '"' +
+			' /></td>' +
+			'<td>' + pepl_rfq2_h(v.supplier_name || sup) + '</td>' +
+			'<td>' + pepl_rfq2_h(v.source_label || '') + '</td>' +
+			'</tr>';
+	});
+	return out;
+}
+
+// ── Apply ──────────────────────────────────────────────────────────────────
+
 function pepl_rfq2_apply(frm, dlg) {
-	frappe.model.clear_table(frm.doc, 'per_item_vendor_selections');
+	// Build a map: item_idx → [supplier, ...]
+	var vendor_map = {};
 
-	var seen = {};
-
-	function add_sel(rfq_item_idx, rfq_item_code, vendor, is_qualified, source) {
-		var key = rfq_item_idx + '||' + rfq_item_code + '||' + vendor;
-		if (seen[key]) return;
-		seen[key] = 1;
-		var row = frappe.model.add_child(frm.doc, 'per_item_vendor_selections');
-		row.rfq_item_idx = cint(rfq_item_idx);
-		row.rfq_item_code = rfq_item_code;
-		row.vendor = vendor;
-		row.is_qualified = is_qualified;
-		row.source = source || '';
-		row.is_selected = 1;
+	function note(idx, vendor) {
+		if (!idx || !vendor) return;
+		var key = String(idx);
+		if (!vendor_map[key]) vendor_map[key] = {};
+		vendor_map[key][vendor] = true;
 	}
 
-	dlg.$wrapper.find('.pepl-rfq2-qcb:checked').each(function () {
+	// Collect all checked boxes (tier 1, 2, 3, manual)
+	dlg.$wrapper.find(
+		'.pepl-rfq2-t1cb:checked, .pepl-rfq2-t2cb:checked, ' +
+		'.pepl-rfq2-t3cb:checked, .pepl-rfq2-mcb:checked'
+	).each(function () {
 		var el = $(this);
-		add_sel(
-			el.attr('data-item-idx'),
-			el.attr('data-item-code'),
-			el.attr('data-vendor'),
-			1,
-			el.attr('data-source') || ''
-		);
+		note(el.attr('data-item-idx'), el.attr('data-vendor'));
 	});
 
-	dlg.$wrapper.find('.pepl-rfq2-mcb:checked').each(function () {
-		var el = $(this);
-		add_sel(
-			el.attr('data-item-idx'),
-			el.attr('data-item-code'),
-			el.attr('data-vendor'),
-			0,
-			'Manual Override'
-		);
+	// Write to each item's target_vendors child table
+	(frm.doc.items || []).forEach(function (it) {
+		if (!it.item_code) return;
+		var key = String(it.idx);
+		var vendors = vendor_map[key] ? Object.keys(vendor_map[key]) : [];
+
+		// Clear existing target_vendors rows for this item
+		frappe.model.clear_table(it, 'target_vendors');
+
+		vendors.forEach(function (sup) {
+			var row = frappe.model.add_child(it, 'PEPL RFQ Item Target Vendor', 'target_vendors');
+			row.supplier = sup;
+		});
 	});
 
 	dlg.hide();
-	frm.refresh_field('per_item_vendor_selections');
+	frm.refresh_field('items');
 	frm.save().then(function () {
 		frappe.show_alert({ message: __('Per-item vendor selections saved.'), indicator: 'green' });
 	});

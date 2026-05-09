@@ -1,4 +1,4 @@
-pepl_os.pepl_os.patches.v0_0_1.delete_old_renamed_reports
+﻿pepl_os.pepl_os.patches.v0_0_1.delete_old_renamed_reports
 pepl_os.pepl_os.patches.v0_0_1.install_rm_group_fixtures
 pepl_os.pepl_os.patches.v1_0.cleanup_old_module5
 pepl_os.pepl_os.patches.restructure_item_groups
@@ -22,4 +22,7 @@ pepl_os.pepl_os.patches.add_supplier_rm_coverage_table
 pepl_os.pepl_os.patches.repopulate_rm_groups_v2
 pepl_os.pepl_os.patches.backfill_supplier_rm_coverage
 pepl_os.pepl_os.patches.rename_pepl_reports
-pepl_os.pepl_os.patches.add_rfq_per_item_vendor_table
+
+[post_model_sync]
+pepl_os.pepl_os.patches.v1.drop_rfq_junction_table
+pepl_os.pepl_os.patches.v1.add_rfq_item_target_vendors

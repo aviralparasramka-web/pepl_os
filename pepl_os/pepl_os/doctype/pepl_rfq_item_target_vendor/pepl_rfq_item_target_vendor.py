@@ -4,5 +4,5 @@ import frappe
 from frappe.model.document import Document
 
 
-class PEPLRFQItemVendorSelection(Document):
+class PEPLRFQItemTargetVendor(Document):
 	pass
