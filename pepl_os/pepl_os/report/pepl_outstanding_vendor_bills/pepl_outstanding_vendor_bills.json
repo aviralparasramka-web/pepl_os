@@ -13,11 +13,11 @@
  "modified": "2026-05-08 12:00:00",
  "modified_by": "Administrator",
  "module": "PEPL OS",
- "name": "Outstanding Vendor Bills",
+ "name": "PEPL Outstanding Vendor Bills",
  "owner": "Administrator",
  "prepared_report": 0,
  "ref_doctype": "Purchase Invoice",
- "report_name": "Outstanding Vendor Bills",
+ "report_name": "PEPL Outstanding Vendor Bills",
  "report_type": "Script Report",
  "roles": [
   {"role": "System Manager"},

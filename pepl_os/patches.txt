@@ -21,3 +21,4 @@ pepl_os.pepl_os.patches.add_rm_group_parent_category_field
 pepl_os.pepl_os.patches.add_supplier_rm_coverage_table
 pepl_os.pepl_os.patches.repopulate_rm_groups_v2
 pepl_os.pepl_os.patches.backfill_supplier_rm_coverage
+pepl_os.pepl_os.patches.rename_pepl_reports

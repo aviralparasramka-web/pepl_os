@@ -14,11 +14,11 @@
  "modified": "2026-05-08 12:00:00",
  "modified_by": "Administrator",
  "module": "PEPL OS",
- "name": "Vendor RM Coverage",
+ "name": "PEPL Vendor RM Coverage",
  "owner": "Administrator",
  "prepared_report": 0,
  "ref_doctype": "PEPL Supplier Approval",
- "report_name": "Vendor RM Coverage",
+ "report_name": "PEPL Vendor RM Coverage",
  "report_type": "Script Report",
  "roles": [
   {"role": "System Manager"},

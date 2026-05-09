@@ -15,11 +15,11 @@
  "modified": "2026-05-08 12:00:00",
  "modified_by": "Administrator",
  "module": "PEPL OS",
- "name": "Open PO Ageing",
+ "name": "PEPL Open PO Ageing",
  "owner": "Administrator",
  "prepared_report": 0,
  "ref_doctype": "Purchase Order",
- "report_name": "Open PO Ageing",
+ "report_name": "PEPL Open PO Ageing",
  "report_type": "Script Report",
  "roles": [
   {"role": "System Manager"},
