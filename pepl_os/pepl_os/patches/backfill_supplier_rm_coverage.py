@@ -5,6 +5,11 @@ from frappe.utils import add_months, getdate, today
 
 
 def execute():
+    # Defensive: reload meta so child table is present before querying (pre or post sync).
+    frappe.reload_doctype("PEPL Supplier RM Coverage", force=True)
+    frappe.reload_doctype("PEPL Supplier Approval", force=True)
+    frappe.db.commit()
+
     lookback_months = 18
     cutoff = add_months(getdate(today()), -lookback_months)
 
