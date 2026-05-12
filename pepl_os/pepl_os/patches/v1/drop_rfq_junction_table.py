@@ -13,6 +13,19 @@ import frappe
 
 
 def execute():
+    # Defensive prefix per V4 closing rule.
+    # Reload the old junction DocType (may or may not exist depending on
+    # prior deploy state). Wrapped in try/except so a missing DocType
+    # definition on disk does not abort the patch.
+    try:
+        frappe.reload_doctype("PEPL RFQ Item Vendor Selection", force=True)
+        frappe.db.commit()
+    except Exception as e:
+        frappe.log_error(
+            f"reload_doctype failed: {e}",
+            "drop_rfq_junction_table",
+        )
+
     # Drop the junction table if it still exists
     try:
         if frappe.db.table_exists("tabPEPL RFQ Item Vendor Selection"):
