@@ -1,0 +1,19 @@
+{
+ "doctype": "Dashboard Chart",
+ "name": "PCC MRs by Priority",
+ "chart_name": "PCC MRs by Priority",
+ "chart_type": "Group By",
+ "document_type": "Material Request",
+ "group_by_based_on": "custom_priority",
+ "group_by_type": "Count",
+ "type": "Donut",
+ "is_public": 1,
+ "timeseries": 0,
+ "filters_json": "[[\"Material Request\",\"status\",\"=\",\"Pending\"]]",
+ "based_on": "creation",
+ "time_interval": "Yearly",
+ "modified": "2026-05-11 00:00:00",
+ "modified_by": "Administrator",
+ "owner": "Administrator",
+ "_comment": "TODO: Verify field name 'custom_priority' on Material Request DocType. If the priority field has a different name (e.g. 'priority'), update group_by_based_on accordingly."
+}

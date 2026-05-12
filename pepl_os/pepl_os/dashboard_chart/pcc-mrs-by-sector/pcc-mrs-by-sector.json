@@ -1,0 +1,19 @@
+{
+ "doctype": "Dashboard Chart",
+ "name": "PCC MRs by Sector",
+ "chart_name": "PCC MRs by Sector",
+ "chart_type": "Group By",
+ "document_type": "Material Request",
+ "group_by_based_on": "custom_sector",
+ "group_by_type": "Count",
+ "type": "Donut",
+ "is_public": 1,
+ "timeseries": 0,
+ "filters_json": "[[\"Material Request\",\"status\",\"=\",\"Pending\"]]",
+ "based_on": "creation",
+ "time_interval": "Yearly",
+ "modified": "2026-05-11 00:00:00",
+ "modified_by": "Administrator",
+ "owner": "Administrator",
+ "_comment": "TODO: Verify that 'custom_sector' field exists on Material Request. If it does not exist, remove this chart from the PCC To Order workspace content block before migrating."
+}

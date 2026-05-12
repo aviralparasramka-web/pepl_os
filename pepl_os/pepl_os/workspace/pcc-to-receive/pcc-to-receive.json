@@ -1,0 +1,65 @@
+{
+ "doctype": "Workspace",
+ "name": "PCC To Receive",
+ "label": "PCC To Receive",
+ "title": "PCC To Receive",
+ "module": "Parasramka ERPNext",
+ "public": 1,
+ "is_hidden": 0,
+ "for_user": null,
+ "icon": "receipt",
+ "indicator_color": "blue",
+ "parent_page": "Purchase Command Centre",
+ "sequence_id": 3.0,
+ "content": "[{\"id\":\"to_recv_cards\",\"type\":\"number_card\",\"data\":{\"number_cards\":[{\"number_card_name\":\"PCC POs Awaiting Acknowledgement\",\"label\":\"POs Awaiting Acknowledgement\",\"col\":3},{\"number_card_name\":\"PCC POs Acknowledged\",\"label\":\"POs Acknowledged\",\"col\":3},{\"number_card_name\":\"PCC POs Dispatched\",\"label\":\"POs Dispatched\",\"col\":3},{\"number_card_name\":\"PCC POs Overdue 30+\",\"label\":\"POs Overdue 30+\",\"col\":3},{\"number_card_name\":\"PCC Awaiting Inspection\",\"label\":\"Awaiting Inspection\",\"col\":3}]}},{\"id\":\"to_recv_chart1\",\"type\":\"chart\",\"data\":{\"chart_name\":\"PCC POs by Stage\",\"label\":\"POs by Stage\",\"col\":6}},{\"id\":\"to_recv_chart2\",\"type\":\"chart\",\"data\":{\"chart_name\":\"PCC POs Ageing\",\"label\":\"POs Ageing by Value\",\"col\":6}},{\"id\":\"to_recv_shortcuts_hdr\",\"type\":\"header\",\"data\":{\"text\":\"Quick Links\",\"col\":12,\"level\":4}}]",
+ "shortcuts": [
+  {
+   "name": "to_recv_sc1",
+   "label": "PO Tracker — PO Sent",
+   "type": "DocType",
+   "link_to": "PEPL Purchase Tracker",
+   "color": "#4299E1",
+   "icon": "list",
+   "stats_filter": "{\"current_status\": \"PO Sent\"}"
+  },
+  {
+   "name": "to_recv_sc2",
+   "label": "PO Tracker — Dispatched",
+   "type": "DocType",
+   "link_to": "PEPL Purchase Tracker",
+   "color": "#4299E1",
+   "icon": "truck",
+   "stats_filter": "{\"current_status\": \"Material Dispatched\"}"
+  },
+  {
+   "name": "to_recv_sc3",
+   "label": "POs Overdue 30+",
+   "type": "DocType",
+   "link_to": "PEPL Purchase Tracker",
+   "color": "#E53E3E",
+   "icon": "alert",
+   "stats_filter": "{\"ageing_bucket\": \"30+ days\"}"
+  },
+  {
+   "name": "to_recv_sc4",
+   "label": "New Purchase Receipt",
+   "type": "DocType",
+   "link_to": "Purchase Receipt",
+   "color": "#38A169",
+   "icon": "add",
+   "doc_view": "new"
+  },
+  {
+   "name": "to_recv_sc5",
+   "label": "Open PO Ageing Report",
+   "type": "Report",
+   "link_to": "PEPL Open PO Ageing",
+   "color": "#4299E1",
+   "icon": "report"
+  }
+ ],
+ "cards": {"items": []},
+ "modified": "2026-05-11 00:00:00",
+ "modified_by": "Administrator",
+ "owner": "Administrator"
+}

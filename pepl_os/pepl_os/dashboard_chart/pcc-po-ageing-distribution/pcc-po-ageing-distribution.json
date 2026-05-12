@@ -1,0 +1,18 @@
+{
+ "doctype": "Dashboard Chart",
+ "name": "PCC PO Ageing Distribution",
+ "chart_name": "PCC PO Ageing Distribution",
+ "chart_type": "Group By",
+ "document_type": "PEPL Purchase Tracker",
+ "group_by_based_on": "ageing_bucket",
+ "group_by_type": "Count",
+ "type": "Bar",
+ "is_public": 1,
+ "timeseries": 0,
+ "filters_json": "[[\"PEPL Purchase Tracker\",\"current_status\",\"!=\",\"Closed\"]]",
+ "based_on": "creation",
+ "time_interval": "Yearly",
+ "modified": "2026-05-11 00:00:00",
+ "modified_by": "Administrator",
+ "owner": "Administrator"
+}

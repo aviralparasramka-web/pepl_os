@@ -1,0 +1,16 @@
+{
+ "doctype": "Number Card",
+ "name": "PCC RFQs Awaiting Quotes",
+ "label": "RFQs Awaiting Quotes",
+ "type": "Document Type",
+ "document_type": "Request for Quotation",
+ "function": "Count",
+ "filters_json": "[[\"Request for Quotation\",\"status\",\"=\",\"Submitted\"]]",
+ "color": "#4299E1",
+ "show_percentage_stats": 0,
+ "stats_time_interval": "Monthly",
+ "is_public": 1,
+ "modified": "2026-05-11 00:00:00",
+ "modified_by": "Administrator",
+ "owner": "Administrator"
+}

@@ -1,0 +1,74 @@
+{
+ "doctype": "Workspace",
+ "name": "PCC To Order",
+ "label": "PCC To Order",
+ "title": "PCC To Order",
+ "module": "Parasramka ERPNext",
+ "public": 1,
+ "is_hidden": 0,
+ "for_user": null,
+ "icon": "cart",
+ "indicator_color": "blue",
+ "parent_page": "Purchase Command Centre",
+ "sequence_id": 2.0,
+ "content": "[{\"id\":\"to_order_cards\",\"type\":\"number_card\",\"data\":{\"number_cards\":[{\"number_card_name\":\"PCC Open MRs Awaiting Action\",\"label\":\"Open MRs Awaiting Action\",\"col\":3},{\"number_card_name\":\"PCC RFQs Awaiting Quotes\",\"label\":\"RFQs Awaiting Quotes\",\"col\":3},{\"number_card_name\":\"PCC Quotes Decision Pending\",\"label\":\"Quotes Decision Pending\",\"col\":3},{\"number_card_name\":\"PCC Reorder Alerts\",\"label\":\"Reorder Alerts\",\"col\":3}]}},{\"id\":\"to_order_chart1\",\"type\":\"chart\",\"data\":{\"chart_name\":\"PCC MRs by Priority\",\"label\":\"MRs by Priority\",\"col\":6}},{\"id\":\"to_order_chart2\",\"type\":\"chart\",\"data\":{\"chart_name\":\"PCC MRs by Sector\",\"label\":\"MRs by Sector\",\"col\":6}},{\"id\":\"to_order_shortcuts_hdr\",\"type\":\"header\",\"data\":{\"text\":\"Quick Links\",\"col\":12,\"level\":4}}]",
+ "shortcuts": [
+  {
+   "name": "to_order_sc1",
+   "label": "New Material Request",
+   "type": "DocType",
+   "link_to": "Material Request",
+   "color": "#38A169",
+   "icon": "add",
+   "doc_view": "new"
+  },
+  {
+   "name": "to_order_sc2",
+   "label": "Pending MRs",
+   "type": "DocType",
+   "link_to": "Material Request",
+   "color": "#4299E1",
+   "icon": "material-request",
+   "stats_filter": "{\"status\": \"Pending\"}"
+  },
+  {
+   "name": "to_order_sc3",
+   "label": "Request for Quotation",
+   "type": "DocType",
+   "link_to": "Request for Quotation",
+   "color": "#4299E1",
+   "icon": "rfq",
+   "stats_filter": "{\"status\": \"Submitted\"}"
+  },
+  {
+   "name": "to_order_sc4",
+   "label": "Supplier Quotations",
+   "type": "DocType",
+   "link_to": "Supplier Quotation",
+   "color": "#4299E1",
+   "icon": "supplier-quotation",
+   "stats_filter": "{\"status\": \"Submitted\"}"
+  },
+  {
+   "name": "to_order_sc5",
+   "label": "Quotation Comparison",
+   "type": "Page",
+   "link_to": "quotation-comparison",
+   "color": "#4299E1",
+   "icon": "compare"
+  },
+  {
+   "name": "to_order_sc6",
+   "label": "New Purchase Order",
+   "type": "DocType",
+   "link_to": "Purchase Order",
+   "color": "#38A169",
+   "icon": "add",
+   "doc_view": "new"
+  }
+ ],
+ "cards": {"items": []},
+ "modified": "2026-05-11 00:00:00",
+ "modified_by": "Administrator",
+ "owner": "Administrator"
+}

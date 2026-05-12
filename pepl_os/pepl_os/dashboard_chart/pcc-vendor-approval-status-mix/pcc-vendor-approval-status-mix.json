@@ -1,0 +1,18 @@
+{
+ "doctype": "Dashboard Chart",
+ "name": "PCC Vendor Approval Status Mix",
+ "chart_name": "PCC Vendor Approval Status Mix",
+ "chart_type": "Group By",
+ "document_type": "PEPL Supplier Approval",
+ "group_by_based_on": "approval_status",
+ "group_by_type": "Count",
+ "type": "Donut",
+ "is_public": 1,
+ "timeseries": 0,
+ "filters_json": "[]",
+ "based_on": "creation",
+ "time_interval": "Yearly",
+ "modified": "2026-05-11 00:00:00",
+ "modified_by": "Administrator",
+ "owner": "Administrator"
+}

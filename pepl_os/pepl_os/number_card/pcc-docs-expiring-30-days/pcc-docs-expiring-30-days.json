@@ -1,0 +1,17 @@
+{
+ "doctype": "Number Card",
+ "name": "PCC Docs Expiring 30 Days",
+ "label": "Docs Expiring 30 Days",
+ "type": "Document Type",
+ "document_type": "PEPL Supplier Document",
+ "function": "Count",
+ "filters_json": "[[\"PEPL Supplier Document\",\"parenttype\",\"=\",\"PEPL Supplier Approval\"],[\"PEPL Supplier Document\",\"expiry_date\",\">=\",\"Today\"],[\"PEPL Supplier Document\",\"expiry_date\",\"Timespan\",\"next 30 days\"]]",
+ "color": "#ED8936",
+ "show_percentage_stats": 0,
+ "stats_time_interval": "Monthly",
+ "is_public": 1,
+ "modified": "2026-05-11 00:00:00",
+ "modified_by": "Administrator",
+ "owner": "Administrator",
+ "_comment": "TODO: Verify that 'next 30 days' Timespan filter is supported in this Frappe version. Fallback: replace with a Custom Number Card method pepl_os.pepl_os.api.number_cards.docs_expiring_30_days if the Timespan filter does not fire correctly on child DocType rows."
+}

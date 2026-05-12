@@ -1,0 +1,15 @@
+{
+ "doctype": "Dashboard Chart",
+ "name": "PCC Procurement Funnel",
+ "chart_name": "PCC Procurement Funnel",
+ "chart_type": "Report",
+ "report_name": "Procurement Funnel",
+ "type": "Bar",
+ "is_public": 1,
+ "timeseries": 0,
+ "filters_json": "{}",
+ "modified": "2026-05-11 00:00:00",
+ "modified_by": "Administrator",
+ "owner": "Administrator",
+ "_comment": "TODO: Activate once Procurement Funnel Query Report is verified post-migrate. The report returns columns [stage, value] with 6 rows: MR -> RFQ -> PO -> PR -> Invoice -> Paid. Chart will render automatically once report is live."
+}

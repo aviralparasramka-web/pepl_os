@@ -1,0 +1,71 @@
+{
+ "doctype": "Workspace",
+ "name": "PCC Home",
+ "label": "PCC Home",
+ "title": "PCC Home",
+ "module": "Parasramka ERPNext",
+ "public": 1,
+ "is_hidden": 0,
+ "for_user": null,
+ "icon": "home",
+ "indicator_color": "blue",
+ "parent_page": "Purchase Command Centre",
+ "sequence_id": 1.0,
+ "content": "[{\"id\":\"home_cards\",\"type\":\"number_card\",\"data\":{\"number_cards\":[{\"number_card_name\":\"PCC Open MR Value\",\"label\":\"Open MR Value\",\"col\":3},{\"number_card_name\":\"PCC In-Flight PO Value\",\"label\":\"In-Flight PO Value\",\"col\":3},{\"number_card_name\":\"PCC Awaiting GRN\",\"label\":\"Awaiting GRN\",\"col\":3},{\"number_card_name\":\"PCC AP Outstanding\",\"label\":\"AP Outstanding\",\"col\":3},{\"number_card_name\":\"PCC This Month Spend\",\"label\":\"This Month Spend\",\"col\":3}]}},{\"id\":\"home_chart1\",\"type\":\"chart\",\"data\":{\"chart_name\":\"PCC Procurement Funnel\",\"label\":\"Procurement Funnel\",\"col\":6}},{\"id\":\"home_chart2\",\"type\":\"chart\",\"data\":{\"chart_name\":\"PCC PO Ageing Distribution\",\"label\":\"PO Ageing Distribution\",\"col\":6}},{\"id\":\"home_shortcuts_hdr\",\"type\":\"header\",\"data\":{\"text\":\"Quick Links\",\"col\":12,\"level\":4}}]",
+ "shortcuts": [
+  {
+   "name": "home_sc1",
+   "label": "Material Requests",
+   "type": "DocType",
+   "link_to": "Material Request",
+   "color": "#4299E1",
+   "icon": "material-request",
+   "stats_filter": "{\"status\": \"Pending\"}"
+  },
+  {
+   "name": "home_sc2",
+   "label": "Purchase Orders",
+   "type": "DocType",
+   "link_to": "Purchase Order",
+   "color": "#4299E1",
+   "icon": "purchase-order",
+   "stats_filter": "{\"docstatus\": 1}"
+  },
+  {
+   "name": "home_sc3",
+   "label": "PO Tracker",
+   "type": "DocType",
+   "link_to": "PEPL Purchase Tracker",
+   "color": "#4299E1",
+   "icon": "list"
+  },
+  {
+   "name": "home_sc4",
+   "label": "Purchase Invoices",
+   "type": "DocType",
+   "link_to": "Purchase Invoice",
+   "color": "#4299E1",
+   "icon": "purchase-invoice"
+  },
+  {
+   "name": "home_sc5",
+   "label": "Open PO Ageing",
+   "type": "Report",
+   "link_to": "PEPL Open PO Ageing",
+   "color": "#4299E1",
+   "icon": "report"
+  },
+  {
+   "name": "home_sc6",
+   "label": "Procurement Funnel",
+   "type": "Report",
+   "link_to": "Procurement Funnel",
+   "color": "#4299E1",
+   "icon": "report"
+  }
+ ],
+ "cards": {"items": []},
+ "modified": "2026-05-11 00:00:00",
+ "modified_by": "Administrator",
+ "owner": "Administrator"
+}

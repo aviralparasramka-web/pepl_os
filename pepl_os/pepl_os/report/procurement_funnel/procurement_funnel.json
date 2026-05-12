@@ -1,0 +1,21 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "doctype": "Report",
+ "filters": [],
+ "is_standard": "Yes",
+ "letter_head": "",
+ "modified": "2026-05-11 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "Procurement Funnel",
+ "owner": "Administrator",
+ "ref_doctype": "Material Request",
+ "report_name": "Procurement Funnel",
+ "report_type": "Script Report",
+ "roles": [
+  {"role": "Purchase Manager"},
+  {"role": "Purchase User"},
+  {"role": "System Manager"}
+ ]
+}

@@ -1,0 +1,22 @@
+{
+ "doctype": "Dashboard Chart",
+ "name": "PCC Top 10 Vendors by AP",
+ "chart_name": "PCC Top 10 Vendors by AP",
+ "chart_type": "Group By",
+ "document_type": "Purchase Invoice",
+ "group_by_based_on": "supplier",
+ "group_by_type": "Sum",
+ "value_based_on": "outstanding_amount",
+ "type": "Bar",
+ "is_public": 1,
+ "timeseries": 0,
+ "filters_json": "[[\"Purchase Invoice\",\"outstanding_amount\",\">\",0],[\"Purchase Invoice\",\"docstatus\",\"=\",1]]",
+ "based_on": "creation",
+ "time_interval": "Yearly",
+ "number_of_groups": 10,
+ "sort_by": "value",
+ "sort_order": "Descending",
+ "modified": "2026-05-11 00:00:00",
+ "modified_by": "Administrator",
+ "owner": "Administrator"
+}

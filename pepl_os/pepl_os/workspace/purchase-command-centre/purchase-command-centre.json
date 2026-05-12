@@ -1,0 +1,20 @@
+{
+ "doctype": "Workspace",
+ "name": "Purchase Command Centre",
+ "label": "Purchase Command Centre",
+ "title": "Purchase Command Centre",
+ "module": "Parasramka ERPNext",
+ "public": 1,
+ "is_hidden": 0,
+ "for_user": null,
+ "icon": "purchase",
+ "indicator_color": "blue",
+ "parent_page": "",
+ "sequence_id": 1.0,
+ "content": "[]",
+ "shortcuts": [],
+ "cards": {"items": []},
+ "modified": "2026-05-11 00:00:00",
+ "modified_by": "Administrator",
+ "owner": "Administrator"
+}

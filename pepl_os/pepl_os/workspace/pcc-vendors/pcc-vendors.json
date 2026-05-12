@@ -1,0 +1,72 @@
+{
+ "doctype": "Workspace",
+ "name": "PCC Vendors",
+ "label": "PCC Vendors",
+ "title": "PCC Vendors",
+ "module": "Parasramka ERPNext",
+ "public": 1,
+ "is_hidden": 0,
+ "for_user": null,
+ "icon": "supplier",
+ "indicator_color": "blue",
+ "parent_page": "Purchase Command Centre",
+ "sequence_id": 5.0,
+ "content": "[{\"id\":\"vendor_cards\",\"type\":\"number_card\",\"data\":{\"number_cards\":[{\"number_card_name\":\"PCC Suppliers Approved\",\"label\":\"Suppliers Approved\",\"col\":3},{\"number_card_name\":\"PCC Pending Approval\",\"label\":\"Pending Approval\",\"col\":3},{\"number_card_name\":\"PCC Expired Suppliers\",\"label\":\"Expired\",\"col\":3},{\"number_card_name\":\"PCC Docs Expiring 30 Days\",\"label\":\"Docs Expiring 30 Days\",\"col\":3}]}},{\"id\":\"vendor_chart1\",\"type\":\"chart\",\"data\":{\"chart_name\":\"PCC Vendor Approval Status Mix\",\"label\":\"Vendor Approval Status Mix\",\"col\":6}},{\"id\":\"vendor_chart2\",\"type\":\"chart\",\"data\":{\"chart_name\":\"PCC Top 10 Vendors by YTD Spend\",\"label\":\"Top 10 Vendors by YTD Spend\",\"col\":6}},{\"id\":\"vendor_shortcuts_hdr\",\"type\":\"header\",\"data\":{\"text\":\"Quick Links\",\"col\":12,\"level\":4}}]",
+ "shortcuts": [
+  {
+   "name": "vendor_sc1",
+   "label": "New Supplier Approval",
+   "type": "DocType",
+   "link_to": "PEPL Supplier Approval",
+   "color": "#38A169",
+   "icon": "add",
+   "doc_view": "new"
+  },
+  {
+   "name": "vendor_sc2",
+   "label": "Approved Suppliers",
+   "type": "DocType",
+   "link_to": "PEPL Supplier Approval",
+   "color": "#38A169",
+   "icon": "supplier",
+   "stats_filter": "{\"approval_status\": \"Approved\"}"
+  },
+  {
+   "name": "vendor_sc3",
+   "label": "Pending Approvals",
+   "type": "DocType",
+   "link_to": "PEPL Supplier Approval",
+   "color": "#ED8936",
+   "icon": "pending",
+   "stats_filter": "{\"approval_status\": \"Pending\"}"
+  },
+  {
+   "name": "vendor_sc4",
+   "label": "Vendor Approval Register",
+   "type": "Report",
+   "link_to": "Vendor Approval Register",
+   "color": "#4299E1",
+   "icon": "report"
+  },
+  {
+   "name": "vendor_sc5",
+   "label": "Vendor RM Coverage",
+   "type": "Report",
+   "link_to": "PEPL Vendor RM Coverage",
+   "color": "#4299E1",
+   "icon": "report"
+  },
+  {
+   "name": "vendor_sc6",
+   "label": "Suppliers List",
+   "type": "DocType",
+   "link_to": "Supplier",
+   "color": "#4299E1",
+   "icon": "supplier"
+  }
+ ],
+ "cards": {"items": []},
+ "modified": "2026-05-11 00:00:00",
+ "modified_by": "Administrator",
+ "owner": "Administrator"
+}

@@ -1,0 +1,17 @@
+{
+ "doctype": "Number Card",
+ "name": "PCC Total AP Outstanding",
+ "label": "Total AP Outstanding",
+ "type": "Document Type",
+ "document_type": "Purchase Invoice",
+ "function": "Sum",
+ "aggregate_function_based_on": "outstanding_amount",
+ "filters_json": "[[\"Purchase Invoice\",\"outstanding_amount\",\">\",0],[\"Purchase Invoice\",\"docstatus\",\"=\",1]]",
+ "color": "#4299E1",
+ "show_percentage_stats": 0,
+ "stats_time_interval": "Monthly",
+ "is_public": 1,
+ "modified": "2026-05-11 00:00:00",
+ "modified_by": "Administrator",
+ "owner": "Administrator"
+}

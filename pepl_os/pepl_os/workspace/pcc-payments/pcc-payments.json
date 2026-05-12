@@ -1,0 +1,63 @@
+{
+ "doctype": "Workspace",
+ "name": "PCC Payments",
+ "label": "PCC Payments",
+ "title": "PCC Payments",
+ "module": "Parasramka ERPNext",
+ "public": 1,
+ "is_hidden": 0,
+ "for_user": null,
+ "icon": "payment",
+ "indicator_color": "blue",
+ "parent_page": "Purchase Command Centre",
+ "sequence_id": 4.0,
+ "content": "[{\"id\":\"pay_cards\",\"type\":\"number_card\",\"data\":{\"number_cards\":[{\"number_card_name\":\"PCC Bills Due This Week\",\"label\":\"Bills Due This Week\",\"col\":3},{\"number_card_name\":\"PCC MSME Bills Window\",\"label\":\"MSME Bills Window\",\"col\":3},{\"number_card_name\":\"PCC AP Overdue\",\"label\":\"AP Overdue\",\"col\":3},{\"number_card_name\":\"PCC Total AP Outstanding\",\"label\":\"Total AP Outstanding\",\"col\":3}]}},{\"id\":\"pay_chart1\",\"type\":\"chart\",\"data\":{\"chart_name\":\"PCC AP Ageing\",\"label\":\"AP Ageing\",\"col\":6}},{\"id\":\"pay_chart2\",\"type\":\"chart\",\"data\":{\"chart_name\":\"PCC Top 10 Vendors by AP\",\"label\":\"Top 10 Vendors by AP\",\"col\":6}},{\"id\":\"pay_shortcuts_hdr\",\"type\":\"header\",\"data\":{\"text\":\"Quick Links\",\"col\":12,\"level\":4}}]",
+ "shortcuts": [
+  {
+   "name": "pay_sc1",
+   "label": "Overdue Invoices",
+   "type": "DocType",
+   "link_to": "Purchase Invoice",
+   "color": "#E53E3E",
+   "icon": "purchase-invoice",
+   "stats_filter": "{\"outstanding_amount\": [\">\" ,0]}"
+  },
+  {
+   "name": "pay_sc2",
+   "label": "AP Outstanding Report",
+   "type": "Report",
+   "link_to": "PEPL Outstanding Vendor Bills",
+   "color": "#4299E1",
+   "icon": "report"
+  },
+  {
+   "name": "pay_sc3",
+   "label": "MSME 45-Day Compliance",
+   "type": "Report",
+   "link_to": "PEPL MSME 45 Day Compliance",
+   "color": "#4299E1",
+   "icon": "report"
+  },
+  {
+   "name": "pay_sc4",
+   "label": "New Payment Entry",
+   "type": "DocType",
+   "link_to": "Payment Entry",
+   "color": "#38A169",
+   "icon": "add",
+   "doc_view": "new"
+  },
+  {
+   "name": "pay_sc5",
+   "label": "Payment Entries",
+   "type": "DocType",
+   "link_to": "Payment Entry",
+   "color": "#4299E1",
+   "icon": "payment"
+  }
+ ],
+ "cards": {"items": []},
+ "modified": "2026-05-11 00:00:00",
+ "modified_by": "Administrator",
+ "owner": "Administrator"
+}
