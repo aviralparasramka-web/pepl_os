@@ -17,6 +17,13 @@ fixtures = [
         ]
     },
     {
+        "dt": "Custom Field",
+        "filters": [
+            ["dt", "=", "Request for Quotation Item"],
+            ["fieldname", "=", "target_vendors"]
+        ]
+    },
+    {
         "dt": "Role",
         "filters": [
             ["role_name", "in", ["Engineering Manager", "Engineering User", "Purchase User"]]

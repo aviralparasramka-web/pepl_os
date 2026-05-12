@@ -65,5 +65,16 @@
   "insert_after": "custom_is_product",
   "depends_on": "eval:doc.custom_is_product==1",
   "module": "PEPL OS"
+ },
+ {
+  "name": "Request for Quotation Item-target_vendors",
+  "doctype": "Custom Field",
+  "dt": "Request for Quotation Item",
+  "fieldname": "target_vendors",
+  "label": "Target Vendors",
+  "fieldtype": "Table MultiSelect",
+  "options": "PEPL RFQ Item Target Vendor",
+  "insert_after": "description",
+  "module": "PEPL OS"
  }
 ]

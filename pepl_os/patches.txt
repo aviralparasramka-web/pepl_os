@@ -25,5 +25,4 @@ pepl_os.pepl_os.patches.rename_pepl_reports
 pepl_os.pepl_os.patches.v1.drop_rfq_junction_table
 
 [post_model_sync]
-pepl_os.pepl_os.patches.v1.add_rfq_item_target_vendors
 pepl_os.pepl_os.patches.v1.install_purchase_dashboard
