@@ -3,7 +3,7 @@
  "name": "PCC Payments",
  "label": "PCC Payments",
  "title": "PCC Payments",
- "module": "Parasramka ERPNext",
+ "module": "PEPL OS",
  "public": 1,
  "is_hidden": 0,
  "for_user": null,

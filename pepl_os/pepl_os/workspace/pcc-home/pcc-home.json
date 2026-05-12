@@ -3,7 +3,7 @@
  "name": "PCC Home",
  "label": "PCC Home",
  "title": "PCC Home",
- "module": "Parasramka ERPNext",
+ "module": "PEPL OS",
  "public": 1,
  "is_hidden": 0,
  "for_user": null,

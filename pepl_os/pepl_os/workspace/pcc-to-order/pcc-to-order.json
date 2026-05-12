@@ -3,7 +3,7 @@
  "name": "PCC To Order",
  "label": "PCC To Order",
  "title": "PCC To Order",
- "module": "Parasramka ERPNext",
+ "module": "PEPL OS",
  "public": 1,
  "is_hidden": 0,
  "for_user": null,
