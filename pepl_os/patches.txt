@@ -25,3 +25,4 @@ pepl_os.pepl_os.patches.rename_pepl_reports
 pepl_os.pepl_os.patches.v1.drop_rfq_junction_table
 pepl_os.pepl_os.patches.v1.install_purchase_dashboard
 pepl_os.pepl_os.patches.v1.fix_dashboard_module_names
+pepl_os.pepl_os.patches.v1.link_workspace_dashboard_records
