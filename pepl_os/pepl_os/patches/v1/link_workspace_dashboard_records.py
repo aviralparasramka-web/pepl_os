@@ -96,6 +96,16 @@ def _link_workspace(ws_name):
         existing_charts.add(name)
         added_charts += 1
 
+    # Ensure mandatory parent fields are set
+    # (some Workspaces created by install_purchase_dashboard
+    #  pre-date stricter v14+ validation on these fields)
+    if not ws.type:
+        ws.type = "Workspace"
+    if not ws.title:
+        ws.title = ws_name
+    if ws.public is None:
+        ws.public = 1
+
     if added_cards or added_charts:
         ws.save(ignore_permissions=True)
 
