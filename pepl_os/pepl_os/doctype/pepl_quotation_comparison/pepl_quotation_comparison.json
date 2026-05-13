@@ -1,0 +1,177 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "naming_series:",
+ "creation": "2026-05-13 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "linked_rfq",
+  "comparison_date",
+  "status",
+  "section_items",
+  "comparison_items",
+  "section_responses",
+  "vendor_responses",
+  "section_summary",
+  "vendor_count",
+  "item_count",
+  "total_award_value",
+  "col_break_summary",
+  "approved_by",
+  "approved_on",
+  "section_audit",
+  "pdf_snapshot",
+  "generated_pos",
+  "override_log"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "PEPL-QC-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "linked_rfq",
+   "fieldtype": "Link",
+   "label": "Linked RFQ",
+   "options": "Request for Quotation",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "comparison_date",
+   "fieldtype": "Date",
+   "label": "Comparison Date",
+   "default": "Today",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nPending Approval\nApproved\nCancelled",
+   "default": "Draft",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "section_items",
+   "fieldtype": "Section Break",
+   "label": "Items & Selection"
+  },
+  {
+   "fieldname": "comparison_items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "PEPL Quotation Comparison Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_responses",
+   "fieldtype": "Section Break",
+   "label": "Vendor Responses",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "vendor_responses",
+   "fieldtype": "Table",
+   "label": "Vendor Responses",
+   "options": "PEPL Quotation Comparison Response",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_summary",
+   "fieldtype": "Section Break",
+   "label": "Summary"
+  },
+  {
+   "fieldname": "vendor_count",
+   "fieldtype": "Int",
+   "label": "Vendor Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_count",
+   "fieldtype": "Int",
+   "label": "Item Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_award_value",
+   "fieldtype": "Currency",
+   "label": "Total Award Value",
+   "options": "INR",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "col_break_summary",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "approved_on",
+   "fieldtype": "Datetime",
+   "label": "Approved On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_audit",
+   "fieldtype": "Section Break",
+   "label": "Audit Trail",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "pdf_snapshot",
+   "fieldtype": "Attach",
+   "label": "PDF Snapshot",
+   "read_only": 1
+  },
+  {
+   "fieldname": "generated_pos",
+   "fieldtype": "Small Text",
+   "label": "Generated POs",
+   "description": "Comma-separated PO names",
+   "read_only": 1
+  },
+  {
+   "fieldname": "override_log",
+   "fieldtype": "Long Text",
+   "label": "Override Log",
+   "description": "JSON list of {item, vendor, old, new, reason, user, ts}",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-05-13 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "PEPL Quotation Comparison",
+ "owner": "Administrator",
+ "permissions": [
+  {"cancel": 0, "create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "System Manager", "share": 1, "write": 1},
+  {"cancel": 1, "create": 1, "delete": 0, "email": 1, "export": 0, "print": 1, "read": 1, "report": 1, "role": "Purchase Manager", "share": 0, "submit": 1, "write": 1},
+  {"cancel": 0, "create": 1, "delete": 0, "email": 1, "export": 0, "print": 1, "read": 1, "report": 1, "role": "Purchase User", "share": 0, "write": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "linked_rfq",
+ "track_changes": 1,
+ "track_views": 1
+}

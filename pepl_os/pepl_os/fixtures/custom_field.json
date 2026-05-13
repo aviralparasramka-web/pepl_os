@@ -76,5 +76,20 @@
   "options": "PEPL RFQ Item Target Vendor",
   "insert_after": "description",
   "module": "PEPL OS"
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Purchase Order-linked_quotation_comparison",
+  "dt": "Purchase Order",
+  "fieldname": "linked_quotation_comparison",
+  "label": "Linked Quotation Comparison",
+  "fieldtype": "Link",
+  "options": "PEPL Quotation Comparison",
+  "insert_after": "supplier",
+  "read_only": 1,
+  "no_copy": 1,
+  "module": "PEPL OS",
+  "owner": "Administrator",
+  "modified_by": "Administrator"
  }
 ]
