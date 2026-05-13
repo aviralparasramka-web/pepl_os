@@ -73,7 +73,13 @@ doc_events = {
         "before_submit": "pepl_os.pepl_os.doc_events.purchase_validation.block_pi_if_perm_suspended"
     },
     "Request for Quotation": {
-        "on_submit": "pepl_os.pepl_os.doc_events.request_for_quotation_pepl.log_non_approved_rfq_suppliers",
+        "on_submit": [
+            "pepl_os.pepl_os.doc_events.request_for_quotation_pepl.log_non_approved_rfq_suppliers",
+            "pepl_os.pepl_os.api.quotation_comparison.auto_create_on_rfq_submit",
+        ],
+    },
+    "Supplier Quotation": {
+        "on_submit": "pepl_os.pepl_os.api.quotation_comparison.auto_refresh_on_sq_submit",
     },
 }
 
