@@ -261,6 +261,9 @@ def approve_comparison(comparison_name):
     comparison.save(ignore_permissions=True)
     frappe.db.commit()
 
+    # Generate PDF snapshot (best-effort; failure does not roll back)
+    _generate_pdf_snapshot(comparison_name)
+
     return po_names
 
 
@@ -455,3 +458,48 @@ def auto_refresh_on_sq_submit(doc, method):
             f"auto_refresh_on_sq_submit failed for SQ {doc.name}: {e}",
             "Quotation Comparison Hook",
         )
+
+
+def _generate_pdf_snapshot(comparison_name):
+    """Generate PDF snapshot via the Print Format and attach to
+    the Comparison record. Called at end of approve_comparison.
+    Wrapped in try/except — failure here must NOT roll back approval."""
+    try:
+        from frappe.utils.pdf import get_pdf
+
+        html = frappe.get_print(
+            doctype="PEPL Quotation Comparison",
+            name=comparison_name,
+            print_format="PEPL Quotation Comparison Snapshot",
+        )
+        pdf_content = get_pdf(html)
+
+        ts = now_datetime().strftime("%Y%m%d_%H%M%S")
+        file_name = f"{comparison_name}_snapshot_{ts}.pdf"
+
+        file_doc = frappe.get_doc({
+            "doctype": "File",
+            "file_name": file_name,
+            "content": pdf_content,
+            "attached_to_doctype": "PEPL Quotation Comparison",
+            "attached_to_name": comparison_name,
+            "is_private": 1,
+        })
+        file_doc.insert(ignore_permissions=True)
+
+        # Update pdf_snapshot field via raw set_value to avoid re-running
+        # validate on the parent (it's already Approved/frozen)
+        frappe.db.set_value(
+            "PEPL Quotation Comparison",
+            comparison_name,
+            "pdf_snapshot",
+            file_doc.file_url,
+        )
+        frappe.db.commit()
+        return file_doc.file_url
+    except Exception as e:
+        frappe.log_error(
+            f"_generate_pdf_snapshot failed for {comparison_name}: {e}",
+            "Quotation Comparison PDF Snapshot",
+        )
+        return None
