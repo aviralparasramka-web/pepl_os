@@ -1,0 +1,122 @@
+{
+ "creation": "2026-05-15 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "consumption_date",
+  "linked_delivery_note",
+  "production_lot_reference",
+  "pieces_dispatched",
+  "dispatched_weight_pepl",
+  "col_break_1",
+  "received_weight_customer",
+  "customer_weight_confirmation_date",
+  "customer_mrr_reference",
+  "customer_mrr_attached",
+  "col_break_2",
+  "weight_variance",
+  "weight_status",
+  "qty_scrapped_at_pepl",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "consumption_date",
+   "fieldtype": "Date",
+   "label": "Consumption Date",
+   "default": "Today",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "linked_delivery_note",
+   "fieldtype": "Link",
+   "label": "Linked Delivery Note",
+   "options": "Delivery Note",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "production_lot_reference",
+   "fieldtype": "Data",
+   "label": "Production Lot Reference"
+  },
+  {
+   "fieldname": "pieces_dispatched",
+   "fieldtype": "Float",
+   "label": "Pieces Dispatched",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "dispatched_weight_pepl",
+   "fieldtype": "Float",
+   "label": "Dispatched Weight (PEPL)",
+   "description": "Captured by Stores at DN submit",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "received_weight_customer",
+   "fieldtype": "Float",
+   "label": "Received Weight (Customer)",
+   "description": "Entered when customer MRR arrives",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "customer_weight_confirmation_date",
+   "fieldtype": "Date",
+   "label": "Customer Confirmation Date"
+  },
+  {
+   "fieldname": "customer_mrr_reference",
+   "fieldtype": "Data",
+   "label": "Customer MRR / Challan Ref"
+  },
+  {
+   "fieldname": "customer_mrr_attached",
+   "fieldtype": "Attach",
+   "label": "Attach Customer MRR"
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "weight_variance",
+   "fieldtype": "Float",
+   "label": "Weight Variance",
+   "read_only": 1,
+   "description": "Auto = customer weight \u2212 PEPL weight"
+  },
+  {
+   "fieldname": "weight_status",
+   "fieldtype": "Select",
+   "label": "Weight Status",
+   "options": "Pending Customer Confirmation\nConfirmed\nDisputed",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "qty_scrapped_at_pepl",
+   "fieldtype": "Float",
+   "label": "Qty Scrapped at PEPL"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "istable": 1,
+ "modified": "2026-05-15 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "PEPL CSM Consumption",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

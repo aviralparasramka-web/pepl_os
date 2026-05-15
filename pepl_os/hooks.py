@@ -50,10 +50,17 @@ doc_events = {
         "on_submit": [
             "pepl_os.pepl_os.doc_events.sales_order_module5.on_submit",
             "pepl_os.pepl_os.doc_events.sales_order_mr_draft.create_mr_draft_from_so",
+            "pepl_os.pepl_os.api.csm_tracker.auto_create_on_so_submit",
         ]
     },
     "Sales Invoice": {
-        "on_submit": "pepl_os.pepl_os.doc_events.sales_invoice_module8.on_submit"
+        "on_submit": [
+            "pepl_os.pepl_os.doc_events.sales_invoice_module8.on_submit",
+            "pepl_os.pepl_os.api.csm_tracker.warn_on_si_submit",
+        ]
+    },
+    "Delivery Note": {
+        "on_submit": "pepl_os.pepl_os.api.csm_tracker.auto_consume_on_dn_submit",
     },
     "Supplier": {
         "after_insert": "pepl_os.pepl_os.doc_events.supplier_lifecycle.on_supplier_insert"

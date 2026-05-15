@@ -1,0 +1,72 @@
+{
+ "creation": "2026-05-15 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "return_date",
+  "return_type",
+  "qty_returned",
+  "return_uom",
+  "customer_document_reference",
+  "attached_challan",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "return_date",
+   "fieldtype": "Date",
+   "label": "Return Date",
+   "default": "Today",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "return_type",
+   "fieldtype": "Select",
+   "label": "Return Type",
+   "options": "Scrap return\nRejected pieces return\nExcess material return",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "qty_returned",
+   "fieldtype": "Float",
+   "label": "Qty Returned",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "return_uom",
+   "fieldtype": "Select",
+   "label": "Return UOM",
+   "options": "kg\nnos\nm\nsqm\nlt",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "customer_document_reference",
+   "fieldtype": "Data",
+   "label": "Customer Return Challan Ref",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "attached_challan",
+   "fieldtype": "Attach",
+   "label": "Attach Return Challan"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "istable": 1,
+ "modified": "2026-05-15 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "PEPL CSM Return",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

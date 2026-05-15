@@ -1,0 +1,317 @@
+{
+ "autoname": "naming_series:",
+ "creation": "2026-05-15 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "linked_so",
+  "customer",
+  "csm_terms",
+  "status",
+  "section_break_agreement",
+  "material_uom",
+  "product_uom",
+  "col_break_1",
+  "expected_output_qty",
+  "allowed_loss_pct",
+  "allowed_rejection_pct",
+  "col_break_2",
+  "scrap_return_policy",
+  "rejection_return_policy",
+  "section_break_receipts",
+  "receipts",
+  "section_break_consumption",
+  "consumption",
+  "section_break_returns",
+  "returns",
+  "section_break_recon",
+  "total_received",
+  "total_dispatched_weight_pepl",
+  "total_dispatched_weight_customer",
+  "total_dispatched_weight_effective",
+  "col_break_3",
+  "total_returned_scrap",
+  "total_returned_rejected",
+  "allowed_loss_qty",
+  "balance_unaccounted",
+  "col_break_4",
+  "reconciliation_status",
+  "rows_pending_customer_confirmation",
+  "section_break_audit",
+  "closure_warnings_log"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "CSM-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "linked_so",
+   "fieldtype": "Link",
+   "label": "Linked Sales Order",
+   "options": "Sales Order",
+   "reqd": 1,
+   "in_list_view": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "fetch_from": "linked_so.customer",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "csm_terms",
+   "fieldtype": "Select",
+   "label": "CSM Terms",
+   "options": "Not Applicable\nReturn All\nScrap Retained at PEPL\nCustomer's Choice on Closure\nCustom Terms",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nPending Disposition\nReconciled\nClosed",
+   "default": "Active",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "section_break_agreement",
+   "fieldtype": "Section Break",
+   "label": "Agreement Terms"
+  },
+  {
+   "fieldname": "material_uom",
+   "fieldtype": "Select",
+   "label": "Material UOM",
+   "options": "kg\nnos\nm\nsqm\nlt",
+   "reqd": 1
+  },
+  {
+   "fieldname": "product_uom",
+   "fieldtype": "Select",
+   "label": "Product UOM",
+   "options": "nos\nkg\nm",
+   "reqd": 1
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "expected_output_qty",
+   "fieldtype": "Int",
+   "label": "Expected Output Qty"
+  },
+  {
+   "fieldname": "allowed_loss_pct",
+   "fieldtype": "Percent",
+   "label": "Allowed Process Loss %",
+   "default": "0"
+  },
+  {
+   "fieldname": "allowed_rejection_pct",
+   "fieldtype": "Percent",
+   "label": "Allowed Rejection %",
+   "default": "0"
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "scrap_return_policy",
+   "fieldtype": "Select",
+   "label": "Scrap Return Policy",
+   "options": "Return scrap to customer\nRetain scrap at PEPL"
+  },
+  {
+   "fieldname": "rejection_return_policy",
+   "fieldtype": "Select",
+   "label": "Rejection Return Policy",
+   "options": "Return rejected pieces\nCustomer abandons rejected pieces\nCustomer's choice on closure"
+  },
+  {
+   "fieldname": "section_break_receipts",
+   "fieldtype": "Section Break",
+   "label": "Receipts"
+  },
+  {
+   "fieldname": "receipts",
+   "fieldtype": "Table",
+   "label": "Receipts",
+   "options": "PEPL CSM Receipt"
+  },
+  {
+   "fieldname": "section_break_consumption",
+   "fieldtype": "Section Break",
+   "label": "Consumption",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "consumption",
+   "fieldtype": "Table",
+   "label": "Consumption",
+   "options": "PEPL CSM Consumption",
+   "description": "Auto-populated from Delivery Note submit"
+  },
+  {
+   "fieldname": "section_break_returns",
+   "fieldtype": "Section Break",
+   "label": "Returns",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "returns",
+   "fieldtype": "Table",
+   "label": "Returns",
+   "options": "PEPL CSM Return"
+  },
+  {
+   "fieldname": "section_break_recon",
+   "fieldtype": "Section Break",
+   "label": "Reconciliation Summary"
+  },
+  {
+   "fieldname": "total_received",
+   "fieldtype": "Float",
+   "label": "Total Received",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_dispatched_weight_pepl",
+   "fieldtype": "Float",
+   "label": "Dispatched Weight (PEPL)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_dispatched_weight_customer",
+   "fieldtype": "Float",
+   "label": "Dispatched Weight (Customer)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_dispatched_weight_effective",
+   "fieldtype": "Float",
+   "label": "Dispatched Weight (Effective)",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "col_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_returned_scrap",
+   "fieldtype": "Float",
+   "label": "Total Returned Scrap",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_returned_rejected",
+   "fieldtype": "Float",
+   "label": "Total Returned Rejected",
+   "read_only": 1
+  },
+  {
+   "fieldname": "allowed_loss_qty",
+   "fieldtype": "Float",
+   "label": "Allowed Loss Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "balance_unaccounted",
+   "fieldtype": "Float",
+   "label": "Balance Unaccounted",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "col_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reconciliation_status",
+   "fieldtype": "Select",
+   "label": "Reconciliation Status",
+   "options": "Reconciled\nPending Customer Confirmation\nMismatch",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "rows_pending_customer_confirmation",
+   "fieldtype": "Int",
+   "label": "Rows Pending Customer Weight",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_audit",
+   "fieldtype": "Section Break",
+   "label": "Audit",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "closure_warnings_log",
+   "fieldtype": "Long Text",
+   "label": "Closure Warnings Log",
+   "read_only": 1,
+   "description": "JSON log of any SO/SI close warnings"
+  }
+ ],
+ "is_submittable": 0,
+ "istable": 0,
+ "modified": "2026-05-15 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "PEPL CSM Tracker",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "report": 1,
+   "share": 1,
+   "print": 1,
+   "email": 1
+  },
+  {
+   "role": "Purchase Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "print": 1,
+   "email": 1,
+   "report": 1
+  },
+  {
+   "role": "Stock Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "print": 1,
+   "email": 1,
+   "report": 1
+  },
+  {
+   "role": "Sales User",
+   "read": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

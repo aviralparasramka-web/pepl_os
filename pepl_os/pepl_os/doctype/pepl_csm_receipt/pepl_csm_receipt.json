@@ -1,0 +1,61 @@
+{
+ "creation": "2026-05-15 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "receipt_date",
+  "qty_received",
+  "production_lot_reference",
+  "customer_document_reference",
+  "attached_challan",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "receipt_date",
+   "fieldtype": "Date",
+   "label": "Receipt Date",
+   "default": "Today",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "qty_received",
+   "fieldtype": "Float",
+   "label": "Qty Received",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "production_lot_reference",
+   "fieldtype": "Data",
+   "label": "Production Lot Reference",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "customer_document_reference",
+   "fieldtype": "Data",
+   "label": "Customer Challan / DC Ref",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "attached_challan",
+   "fieldtype": "Attach",
+   "label": "Attach Challan"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "istable": 1,
+ "modified": "2026-05-15 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "PEPL CSM Receipt",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}
