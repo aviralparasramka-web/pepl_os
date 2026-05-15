@@ -74,7 +74,13 @@ doc_events = {
     },
     "Purchase Receipt": {
         "before_submit": "pepl_os.pepl_os.doc_events.purchase_validation.block_pr_if_perm_suspended",
-        "on_submit": "pepl_os.pepl_os.doc_events.purchase_receipt_tracker.update_purchase_tracker_on_pr_submit",
+        "on_submit": [
+            "pepl_os.pepl_os.doc_events.purchase_receipt_tracker.update_purchase_tracker_on_pr_submit",
+            "pepl_os.pepl_os.api.receipt_log.auto_create_on_pr_submit",
+        ],
+    },
+    "Quality Inspection": {
+        "on_submit": "pepl_os.pepl_os.api.receipt_log.update_qc_on_qi_submit",
     },
     "Purchase Invoice": {
         "before_submit": "pepl_os.pepl_os.doc_events.purchase_validation.block_pi_if_perm_suspended"

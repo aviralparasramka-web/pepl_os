@@ -1,0 +1,94 @@
+{
+ "creation": "2026-05-15 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "doc_type",
+  "doc_type_other",
+  "required",
+  "received",
+  "col_break_1",
+  "attachment",
+  "doc_reference",
+  "received_date",
+  "validity_months",
+  "expiry_date",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "doc_type",
+   "fieldtype": "Select",
+   "label": "Document Type",
+   "options": "Mill Test Certificate\nHeat Treatment Chart\nVendor Inspection Report\nDealership/Authorization Certificate\nInternal QC Report\nNABL Lab Test Report\nConformity Certificate\nOther",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "doc_type_other",
+   "fieldtype": "Data",
+   "label": "Other Doc Type",
+   "depends_on": "eval:doc.doc_type==\"Other\""
+  },
+  {
+   "fieldname": "required",
+   "fieldtype": "Check",
+   "label": "Required",
+   "default": "1",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "received",
+   "fieldtype": "Check",
+   "label": "Received",
+   "default": "0",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attachment"
+  },
+  {
+   "fieldname": "doc_reference",
+   "fieldtype": "Data",
+   "label": "Doc Reference Number",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "received_date",
+   "fieldtype": "Date",
+   "label": "Received Date"
+  },
+  {
+   "fieldname": "validity_months",
+   "fieldtype": "Int",
+   "label": "Validity (months)"
+  },
+  {
+   "fieldname": "expiry_date",
+   "fieldtype": "Date",
+   "label": "Expiry Date",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "istable": 1,
+ "modified": "2026-05-15 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "PEPL Receipt Document",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

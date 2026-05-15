@@ -1,0 +1,267 @@
+{
+ "autoname": "naming_series:",
+ "creation": "2026-05-15 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "linked_purchase_receipt",
+  "linked_po",
+  "supplier",
+  "posting_date",
+  "col_break_1",
+  "item_code",
+  "item_name",
+  "qty_received",
+  "uom",
+  "heat_number",
+  "section_break_location",
+  "warehouse",
+  "rack_number",
+  "col_break_2",
+  "bin_number",
+  "shelf_position",
+  "storage_notes",
+  "section_break_qc",
+  "inspection_required",
+  "qc_status",
+  "col_break_3",
+  "linked_quality_inspection",
+  "qc_remarks",
+  "section_break_docs",
+  "documents",
+  "documents_status",
+  "pending_doc_count",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "RCL-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "linked_purchase_receipt",
+   "fieldtype": "Link",
+   "label": "Linked Purchase Receipt",
+   "options": "Purchase Receipt",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "linked_po",
+   "fieldtype": "Link",
+   "label": "Linked Purchase Order",
+   "options": "Purchase Order",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier",
+   "read_only": 1,
+   "in_list_view": 1,
+   "fetch_from": "linked_purchase_receipt.supplier"
+  },
+  {
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Receipt Date",
+   "read_only": 1,
+   "in_list_view": 1,
+   "fetch_from": "linked_purchase_receipt.posting_date"
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item Code",
+   "options": "Item",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name",
+   "read_only": 1,
+   "fetch_from": "item_code.item_name"
+  },
+  {
+   "fieldname": "qty_received",
+   "fieldtype": "Float",
+   "label": "Qty Received",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "heat_number",
+   "fieldtype": "Data",
+   "label": "Heat Number",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "section_break_location",
+   "fieldtype": "Section Break",
+   "label": "Storage Location"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "rack_number",
+   "fieldtype": "Data",
+   "label": "Rack Number"
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "bin_number",
+   "fieldtype": "Data",
+   "label": "Bin Number"
+  },
+  {
+   "fieldname": "shelf_position",
+   "fieldtype": "Data",
+   "label": "Shelf Position"
+  },
+  {
+   "fieldname": "storage_notes",
+   "fieldtype": "Small Text",
+   "label": "Storage Notes"
+  },
+  {
+   "fieldname": "section_break_qc",
+   "fieldtype": "Section Break",
+   "label": "Quality Inspection"
+  },
+  {
+   "fieldname": "inspection_required",
+   "fieldtype": "Check",
+   "label": "Inspection Required"
+  },
+  {
+   "fieldname": "qc_status",
+   "fieldtype": "Select",
+   "label": "QC Status",
+   "options": "Not Required\nPending\nPassed\nFailed",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "col_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "linked_quality_inspection",
+   "fieldtype": "Link",
+   "label": "Linked Quality Inspection",
+   "options": "Quality Inspection"
+  },
+  {
+   "fieldname": "qc_remarks",
+   "fieldtype": "Small Text",
+   "label": "QC Remarks"
+  },
+  {
+   "fieldname": "section_break_docs",
+   "fieldtype": "Section Break",
+   "label": "Document Checklist"
+  },
+  {
+   "fieldname": "documents",
+   "fieldtype": "Table",
+   "label": "Documents",
+   "options": "PEPL Receipt Document"
+  },
+  {
+   "fieldname": "documents_status",
+   "fieldtype": "Select",
+   "label": "Documents Status",
+   "options": "Not Started\nPending Items\nComplete\nExpired",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "pending_doc_count",
+   "fieldtype": "Int",
+   "label": "Pending Documents",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "PEPL Receipt Log",
+   "read_only": 1,
+   "print_hide": 1
+  }
+ ],
+ "is_submittable": 0,
+ "istable": 0,
+ "modified": "2026-05-15 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "PEPL Receipt Log",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "report": 1,
+   "share": 1,
+   "print": 1,
+   "email": 1
+  },
+  {
+   "role": "Stock Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "print": 1,
+   "email": 1,
+   "report": 1
+  },
+  {
+   "role": "Stock User",
+   "read": 1,
+   "write": 1,
+   "create": 1
+  },
+  {
+   "role": "Quality Manager",
+   "read": 1,
+   "write": 1
+  },
+  {
+   "role": "Purchase Manager",
+   "read": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

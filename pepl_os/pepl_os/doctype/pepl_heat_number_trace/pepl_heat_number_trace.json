@@ -1,0 +1,206 @@
+{
+ "autoname": "field:heat_number",
+ "creation": "2026-05-15 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "heat_number",
+  "item_code",
+  "item_name",
+  "material_grade",
+  "section_break_source",
+  "source_supplier",
+  "source_po",
+  "source_grn",
+  "col_break_1",
+  "source_country",
+  "current_status",
+  "section_break_totals",
+  "total_qty_received",
+  "total_qty_consumed",
+  "total_qty_returned",
+  "col_break_2",
+  "total_qty_scrapped",
+  "total_qty_dispatched",
+  "current_qty_available",
+  "section_break_usage",
+  "usage_log"
+ ],
+ "fields": [
+  {
+   "fieldname": "heat_number",
+   "fieldtype": "Data",
+   "label": "Heat Number",
+   "unique": 1,
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item Code",
+   "options": "Item",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "material_grade",
+   "fieldtype": "Data",
+   "label": "Material Grade"
+  },
+  {
+   "fieldname": "section_break_source",
+   "fieldtype": "Section Break",
+   "label": "Source"
+  },
+  {
+   "fieldname": "source_supplier",
+   "fieldtype": "Link",
+   "label": "Source Supplier",
+   "options": "Supplier",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "source_po",
+   "fieldtype": "Link",
+   "label": "Source Purchase Order",
+   "options": "Purchase Order"
+  },
+  {
+   "fieldname": "source_grn",
+   "fieldtype": "Link",
+   "label": "Source Purchase Receipt",
+   "options": "Purchase Receipt"
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "source_country",
+   "fieldtype": "Data",
+   "label": "Country of Origin"
+  },
+  {
+   "fieldname": "current_status",
+   "fieldtype": "Select",
+   "label": "Current Status",
+   "options": "Available\nIn Production\nFully Consumed\nFully Dispatched\nScrapped\nQuarantine",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "section_break_totals",
+   "fieldtype": "Section Break",
+   "label": "Quantity Summary"
+  },
+  {
+   "fieldname": "total_qty_received",
+   "fieldtype": "Float",
+   "label": "Total Received",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_qty_consumed",
+   "fieldtype": "Float",
+   "label": "Total Consumed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_qty_returned",
+   "fieldtype": "Float",
+   "label": "Total Returned",
+   "read_only": 1
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_qty_scrapped",
+   "fieldtype": "Float",
+   "label": "Total Scrapped",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_qty_dispatched",
+   "fieldtype": "Float",
+   "label": "Total Dispatched",
+   "read_only": 1
+  },
+  {
+   "fieldname": "current_qty_available",
+   "fieldtype": "Float",
+   "label": "Current Available",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "section_break_usage",
+   "fieldtype": "Section Break",
+   "label": "Usage Log"
+  },
+  {
+   "fieldname": "usage_log",
+   "fieldtype": "Table",
+   "label": "Usage Log",
+   "options": "PEPL Heat Number Usage"
+  }
+ ],
+ "is_submittable": 0,
+ "istable": 0,
+ "modified": "2026-05-15 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PEPL OS",
+ "name": "PEPL Heat Number Trace",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "report": 1,
+   "share": 1,
+   "print": 1,
+   "email": 1
+  },
+  {
+   "role": "Stock Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "print": 1,
+   "email": 1,
+   "report": 1
+  },
+  {
+   "role": "Stock User",
+   "read": 1,
+   "write": 1,
+   "create": 1
+  },
+  {
+   "role": "Quality Manager",
+   "read": 1,
+   "write": 1
+  },
+  {
+   "role": "Purchase Manager",
+   "read": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

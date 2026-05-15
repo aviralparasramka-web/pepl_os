@@ -105,5 +105,18 @@
   "module": "PEPL OS",
   "owner": "Administrator",
   "modified_by": "Administrator"
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Purchase Order-expected_documents",
+  "dt": "Purchase Order",
+  "fieldname": "expected_documents",
+  "label": "Expected Documents at Receipt",
+  "fieldtype": "Small Text",
+  "description": "Comma-separated list of documents the vendor must provide with delivery. Example: Mill Test Certificate, Heat Treatment Chart, Vendor Inspection Report",
+  "insert_after": "items",
+  "module": "PEPL OS",
+  "owner": "Administrator",
+  "modified_by": "Administrator"
  }
 ]
