@@ -52,9 +52,17 @@ def auto_create_on_pr_submit(doc, method):
 
         expected_docs_text = ""
         if po_name:
-            expected_docs_text = frappe.db.get_value(
-                "Purchase Order", po_name, "expected_documents"
-            ) or ""
+            # Read expected_documents from either fieldname (auto-prefixed
+            # variant takes precedence if both exist)
+            expected_docs_text = (
+                frappe.db.get_value(
+                    "Purchase Order", po_name, "custom_expected_documents_at_receipt"
+                )
+                or frappe.db.get_value(
+                    "Purchase Order", po_name, "expected_documents"
+                )
+                or ""
+            )
 
         expected_doc_list = [
             s.strip() for s in expected_docs_text.split(",") if s.strip()
@@ -77,10 +85,12 @@ def auto_create_on_pr_submit(doc, method):
             if existing:
                 continue
 
-            # Heat number can be on item or parent
+            # Heat number can be on item or parent, with optional custom_ prefix
             heat_number = (
                 getattr(item, "heat_number", None)
+                or getattr(item, "custom_heat_number", None)
                 or getattr(doc, "heat_number", None)
+                or getattr(doc, "custom_heat_number", None)
                 or ""
             )
 
@@ -93,7 +103,6 @@ def auto_create_on_pr_submit(doc, method):
             log.item_name = item.item_name
             log.qty_received = flt(item.qty)
             log.uom = item.uom
-            log.heat_number = heat_number
             log.warehouse = item.warehouse
 
             insp_req = frappe.db.get_value(
@@ -111,10 +120,16 @@ def auto_create_on_pr_submit(doc, method):
                     "received": 0,
                 })
 
-            log.insert(ignore_permissions=True)
-
+            # Pre-populate one heat_details row if a heat_number was on the PR.
+            # Stores splits this into multiple rows after auto-creation.
             if heat_number:
-                _ensure_heat_trace(heat_number, item, doc, log, po_name)
+                log.append("heat_details", {
+                    "heat_number": heat_number,
+                    "qty": flt(item.qty),
+                    "heat_trace_status": 0,
+                })
+
+            log.insert(ignore_permissions=True)
 
         frappe.db.commit()
     except Exception as e:
@@ -124,39 +139,59 @@ def auto_create_on_pr_submit(doc, method):
         )
 
 
-def _ensure_heat_trace(heat_number, item, pr_doc, log, po_name):
-    """Create or append to PEPL Heat Number Trace."""
-    existing = frappe.db.exists("PEPL Heat Number Trace", heat_number)
+def ensure_heat_trace_from_log_row(log, row):
+    """Create/append Heat Trace from a Receipt Log heat_details row.
+    Called from PEPLReceiptLog.on_submit and on_update_after_submit.
+    Returns True if Trace was created or updated."""
+    try:
+        heat_number = row.heat_number
+        if not heat_number:
+            return False
 
-    if existing:
-        trace = frappe.get_doc("PEPL Heat Number Trace", existing)
-    else:
-        trace = frappe.new_doc("PEPL Heat Number Trace")
-        trace.heat_number = heat_number
-        trace.item_code = item.item_code
-        trace.item_name = item.item_name
-        trace.source_supplier = pr_doc.supplier
-        trace.source_po = po_name
-        trace.source_grn = pr_doc.name
+        existing = frappe.db.exists("PEPL Heat Number Trace", heat_number)
+        if existing:
+            trace = frappe.get_doc("PEPL Heat Number Trace", existing)
+        else:
+            trace = frappe.new_doc("PEPL Heat Number Trace")
+            trace.heat_number = heat_number
+            trace.item_code = log.item_code
+            trace.item_name = log.item_name
+            trace.source_supplier = log.supplier
+            trace.source_po = log.linked_po
+            trace.source_grn = log.linked_purchase_receipt
+            if row.material_grade:
+                trace.material_grade = row.material_grade
 
-    already_logged = any(
-        u.event_type == "Received" and u.reference_name == pr_doc.name
-        for u in (trace.usage_log or [])
-    )
-    if not already_logged:
-        trace.append("usage_log", {
-            "event_date": pr_doc.posting_date or nowdate(),
-            "event_type": "Received",
-            "reference_doctype": "Purchase Receipt",
-            "reference_name": pr_doc.name,
-            "qty": flt(item.qty),
-            "user": frappe.session.user,
-        })
+        # Idempotency: skip if this exact (PR, qty, heat) combo already logged
+        already_logged = any(
+            u.event_type == "Received"
+            and u.reference_name == log.linked_purchase_receipt
+            and abs(flt(u.qty) - flt(row.qty)) < 0.001
+            for u in (trace.usage_log or [])
+        )
+        if not already_logged:
+            trace.append("usage_log", {
+                "event_date": log.posting_date or nowdate(),
+                "event_type": "Received",
+                "reference_doctype": "Purchase Receipt",
+                "reference_name": log.linked_purchase_receipt,
+                "qty": flt(row.qty),
+                "user": frappe.session.user,
+            })
 
-    if existing:
-        trace.save(ignore_permissions=True)
-    else:
-        trace.insert(ignore_permissions=True)
+        if existing:
+            trace.save(ignore_permissions=True)
+        else:
+            trace.insert(ignore_permissions=True)
+
+        frappe.db.commit()
+        return True
+    except Exception as e:
+        frappe.log_error(
+            f"ensure_heat_trace_from_log_row failed for {row.heat_number}: {e}",
+            "Receipt Log Hook",
+        )
+        return False
 
 
 def update_qc_on_qi_submit(doc, method):

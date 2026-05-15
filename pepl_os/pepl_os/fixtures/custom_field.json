@@ -91,32 +91,5 @@
   "module": "PEPL OS",
   "owner": "Administrator",
   "modified_by": "Administrator"
- },
- {
-  "doctype": "Custom Field",
-  "name": "Sales Order-csm_terms",
-  "dt": "Sales Order",
-  "fieldname": "csm_terms",
-  "label": "CSM Terms",
-  "fieldtype": "Select",
-  "options": "Not Applicable\nReturn All\nScrap Retained at PEPL\nCustomer's Choice on Closure\nCustom Terms",
-  "default": "Not Applicable",
-  "insert_after": "customer",
-  "module": "PEPL OS",
-  "owner": "Administrator",
-  "modified_by": "Administrator"
- },
- {
-  "doctype": "Custom Field",
-  "name": "Purchase Order-expected_documents",
-  "dt": "Purchase Order",
-  "fieldname": "expected_documents",
-  "label": "Expected Documents at Receipt",
-  "fieldtype": "Small Text",
-  "description": "Comma-separated list of documents the vendor must provide with delivery. Example: Mill Test Certificate, Heat Treatment Chart, Vendor Inspection Report",
-  "insert_after": "items",
-  "module": "PEPL OS",
-  "owner": "Administrator",
-  "modified_by": "Administrator"
  }
 ]

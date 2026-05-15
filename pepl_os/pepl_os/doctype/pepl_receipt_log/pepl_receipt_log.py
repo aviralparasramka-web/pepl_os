@@ -11,8 +11,13 @@ class PEPLReceiptLog(Document):
         self._update_doc_expiry_dates()
         self._compute_doc_status()
 
+    def on_update_after_submit(self):
+        self._sync_heat_traces()
+
+    def on_submit(self):
+        self._sync_heat_traces()
+
     def _update_doc_expiry_dates(self):
-        """Auto-compute expiry_date from received_date + validity_months."""
         for row in (self.documents or []):
             if row.received_date and row.validity_months:
                 try:
@@ -23,7 +28,6 @@ class PEPLReceiptLog(Document):
                     pass
 
     def _compute_doc_status(self):
-        """Compute documents_status and pending_doc_count."""
         if not self.documents:
             self.documents_status = "Not Started"
             self.pending_doc_count = 0
@@ -37,8 +41,6 @@ class PEPLReceiptLog(Document):
 
         received_required = [d for d in required_docs if d.received]
         pending = len(required_docs) - len(received_required)
-
-        # Check expiry on received docs
         today = getdate(nowdate())
         expired = 0
         for d in self.documents:
@@ -52,3 +54,15 @@ class PEPLReceiptLog(Document):
             self.documents_status = "Expired"
         else:
             self.documents_status = "Complete"
+
+    def _sync_heat_traces(self):
+        """Iterate heat_details and ensure a Heat Number Trace exists
+        for each, with a Received event for this receipt."""
+        from pepl_os.pepl_os.api.receipt_log import (
+            ensure_heat_trace_from_log_row,
+        )
+        for row in (self.heat_details or []):
+            if row.heat_number and flt(row.qty) > 0 and not row.heat_trace_status:
+                created = ensure_heat_trace_from_log_row(self, row)
+                if created:
+                    row.heat_trace_status = 1

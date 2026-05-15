@@ -14,7 +14,8 @@
   "item_name",
   "qty_received",
   "uom",
-  "heat_number",
+  "section_break_heat",
+  "heat_details",
   "section_break_location",
   "warehouse",
   "rack_number",
@@ -109,10 +110,16 @@
    "read_only": 1
   },
   {
-   "fieldname": "heat_number",
-   "fieldtype": "Data",
-   "label": "Heat Number",
-   "in_list_view": 1
+   "fieldname": "section_break_heat",
+   "fieldtype": "Section Break",
+   "label": "Heat Number Details"
+  },
+  {
+   "fieldname": "heat_details",
+   "fieldtype": "Table",
+   "label": "Heat Details",
+   "options": "PEPL Receipt Log Heat Detail",
+   "description": "Split the qty received across heat numbers. Each row creates or appends to a PEPL Heat Number Trace."
   },
   {
    "fieldname": "section_break_location",

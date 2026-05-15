@@ -22,6 +22,15 @@ def create_mr_draft_from_so(doc, method=None):
     Errors are logged but do NOT block SO submission.
     """
     try:
+        # CSM guard: when material is customer-supplied, skip MR draft.
+        # PEPL doesn't procure material that the customer ships in.
+        csm_terms = (
+            getattr(doc, "csm_terms", None)
+            or getattr(doc, "custom_csm_terms", None)
+        )
+        if csm_terms and csm_terms != "Not Applicable":
+            return
+
         if not frappe.db.has_column("Item", "is_product"):
             frappe.log_error(
                 f"MR auto-draft skipped for SO {doc.name}: 'is_product' "

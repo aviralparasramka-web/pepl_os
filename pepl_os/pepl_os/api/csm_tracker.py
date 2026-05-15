@@ -11,7 +11,14 @@ def auto_create_on_so_submit(doc, method):
     """Sales Order on_submit hook: auto-create CSM Tracker if
     csm_terms is set on the SO (custom field) and not 'Not Applicable'."""
     try:
-        csm_terms = getattr(doc, "csm_terms", None)
+        # Read csm_terms from any of: unprefixed, custom_ prefix
+        # (Frappe Cloud auto-adds custom_ prefix to manually created
+        # custom fields), or full prefixed variant.
+        csm_terms = (
+            getattr(doc, "csm_terms", None)
+            or getattr(doc, "custom_csm_terms", None)
+            or None
+        )
         if not csm_terms or csm_terms == "Not Applicable":
             return
 
