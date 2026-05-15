@@ -12,6 +12,7 @@
   "comparison_date",
   "status",
   "section_items",
+  "comparison_grid",
   "comparison_items",
   "section_responses",
   "vendor_responses",
@@ -66,6 +67,11 @@
    "fieldname": "section_items",
    "fieldtype": "Section Break",
    "label": "Items & Selection"
+  },
+  {
+   "fieldname": "comparison_grid",
+   "fieldtype": "HTML",
+   "label": "Comparison Grid"
   },
   {
    "fieldname": "comparison_items",
